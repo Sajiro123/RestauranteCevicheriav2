@@ -1,0 +1,56 @@
+<div class="card">
+    <div class="container">
+        <!-- IZQUIERDA: MESAS -->
+        <div class="mesas">
+            <h2>Mesas</h2>
+            <div class="grid">
+                <div *ngFor="let mesa of mesas" class="mesa" (click)="seleccionarMesa(mesa)">
+                    <div class="estado" [ngClass]="{
+                  'ocupada': mesa.estado === '1',
+                  'libre': mesa.estado === '0'
+                }"></div>
+                    <div class="texto">Mesa Nº{{ mesa.numero }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTRO: DETALLE DE PEDIDOS -->
+        <div class="detalle">
+            <h2 class="mesa-titulo">Mesa </h2>
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>Categoria</th>
+                        <th>Cantidad</th>
+                        <th>Pedido</th>
+                        <th>Estado</th>
+                        <th>Lugar</th>
+                        <th>Precio U.</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>D
+                <tbody>
+                    <!-- <tr *ngFor="let pedido of mesaSeleccionada.pedidos">
+                        <td>{{ pedido.categoria }}</td>
+                        <td>{{ pedido.cantidad }}</td>
+                        <td>{{ pedido.descripcion }}</td>
+                        <td><input type="checkbox"></td>
+                        <td>{{ pedido.lugar }}</td>
+                        <td>{{ pedido.precio }}</td>
+                        <td>{{ pedido.total }}</td>
+                    </tr> -->
+                </tbody>
+            </table>
+            <h2 class="total">Total </h2>
+        </div>
+
+        <!-- DERECHA: BOTONES -->
+        <div class="acciones">
+            <button><i class="icon lápiz"></i> Editar</button>
+            <button><i class="icon ticket"></i> Ticket</button>
+            <button><i class="icon cocina"></i> Cocina</button>
+            <button><i class="icon cobrar"></i> Cobrar</button>
+            <button><i class="icon cancelar"></i> Cancelar</button>
+        </div>
+    </div>
+</div>
