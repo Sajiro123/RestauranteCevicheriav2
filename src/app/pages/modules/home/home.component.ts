@@ -43,7 +43,7 @@ export class HomeComponent {
             }
         );
     }
-
+// asc
     ListarPedidos(): void {
         this.PedidoService.getPedidos().subscribe(
             (response) => {
