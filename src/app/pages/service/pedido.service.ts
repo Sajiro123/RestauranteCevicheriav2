@@ -13,8 +13,7 @@ export class PedidoService {
         private router: Router
     ) {}
 
-    getPedidos(): Observable<any> {
-        debugger;
+    ListarPedidosMesa(): Observable<any> {
         const query = `select
         DATE_FORMAT(p.created_at,'%H:%i:%s') as pedido_hora,
         p.comentario,

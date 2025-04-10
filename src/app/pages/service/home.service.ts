@@ -14,7 +14,6 @@ export class HomeService {
     ) {}
 
     getMesas(): Observable<any> {
-        debugger;
         const query = 'select * from mesa c where c.deleted is  null;';
         return this.http.post<any>(this.apiUrl, { query });
     }

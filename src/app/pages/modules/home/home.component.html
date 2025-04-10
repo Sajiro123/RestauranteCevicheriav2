@@ -1,5 +1,5 @@
 <div class="card">
-    <div class="container">
+    <div class="container" style="max-width: 100%;">
         <!-- IZQUIERDA: MESAS -->
         <div class="mesas">
             <h2>Mesas</h2>
@@ -14,43 +14,50 @@
             </div>
         </div>
 
-        <!-- CENTRO: DETALLE DE PEDIDOS -->
-        <div class="detalle">
-            <h2 class="mesa-titulo">Mesa </h2>
-            <table class="tabla">
-                <thead>
-                    <tr>
-                        <th>Categoria</th>
-                        <th>Cantidad</th>
-                        <th>Pedido</th>
-                        <th>Estado</th>
-                        <th>Lugar</th>
-                        <th>Precio U.</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>D
-                <tbody>
-                    <!-- <tr *ngFor="let pedido of mesaSeleccionada.pedidos">
-                        <td>{{ pedido.categoria }}</td>
-                        <td>{{ pedido.cantidad }}</td>
-                        <td>{{ pedido.descripcion }}</td>
-                        <td><input type="checkbox"></td>
-                        <td>{{ pedido.lugar }}</td>
-                        <td>{{ pedido.precio }}</td>
-                        <td>{{ pedido.total }}</td>
-                    </tr> -->
-                </tbody>
-            </table>
-            <h2 class="total">Total </h2>
-        </div>
 
-        <!-- DERECHA: BOTONES -->
-        <div class="acciones">
-            <button><i class="icon lápiz"></i> Editar</button>
-            <button><i class="icon ticket"></i> Ticket</button>
-            <button><i class="icon cocina"></i> Cocina</button>
-            <button><i class="icon cobrar"></i> Cobrar</button>
-            <button><i class="icon cancelar"></i> Cancelar</button>
+        <!-- CENTRO: DETALLE DE PEDIDOS -->
+        <div class="detalle" *ngIf="pedido_mesa_status">
+            <button> <i class="material-icons" style="font-size: 43px;">edit</i>Editar</button>
+            <button> <i class="material-icons" style="font-size: 43px;">description</i>Ticket</button>
+            <button><i class="material-icons" style="font-size: 43px;">restaurant</i>Cocina</button>
+            <button><i class="fa-solid fa-money-bill-wave" style="font-size: 43px;"></i>Cobrar</button>
+            <button><i class="fa-solid fa-trash" style="font-size: 43px;"></i>Cancelar</button>
+            <div *ngFor="let numMesa of mesas">
+                <div *ngIf="mesaSeleccionada?.numero == numMesa.numero;">
+                    <h2 class="text-red-600 text-2xl font-bold text-center">Mesa {{ numMesa.numero }}</h2>
+                    <table class="table-auto w-full border-collapse mt-2">
+                        <thead>
+                            <tr>
+                                <th>Cantidad</th>
+                                <th>Categoria</th>
+                                <th>Pedido</th>
+                                <th>Estado</th>
+                                <th>Lugar</th>
+                                <th>Precio U.</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tr *ngFor="let pedido of getPedidosDeMesa(numMesa.numero)">
+                            <td>{{ pedido.cantidad }}</td>
+                            <td>{{ pedido.categoria }}</td>
+                            <td>{{ pedido.nombre }}</td>
+                            <td><input type="checkbox" [checked]="pedido.pedido_estado" /></td>
+                            <td>{{ pedido.lugarpedido == 1 ? "Mesa":"Llevar" }}</td>
+                            <td>{{ pedido.precioU }}</td>
+                            <td>{{ pedido.cantidad * pedido.precioU }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="text-right font-bold">Total</td>
+                            <td class="font-bold">
+                                <!-- {{ getPedidosDeMesa(numMesa)
+                                    .reduce((acc, p) => acc + p.cantidad * p.precioUnitario, 0)
+                                    }} -->
+                            </td>
+                        </tr>
+                    </table>
+                    <hr class="my-4 border-gray-300" />
+                </div>
+            </div>
         </div>
     </div>
 </div>
