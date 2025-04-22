@@ -1,88 +1,156 @@
+.colorDashboar {
+    height: 115px;
+    border: 2px solid #DDD;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.numbersDashboard {
+    background-color: #FFF;
+    height: 115px;
+    border: 2px solid #DDD;
+    border-radius: 8px;
+    font-size: 2em;
+    cursor: pointer;
+}
+
+thead tr {
+    background: black;
+
+
+    color: white;
+    height: 40px;
+}
+
+tbody tr {
+    height: 45px;
+    font-size: 18px;
+}
+
+.material-icons {
+    font-size: 43px;
+    padding: 15px;
+    text-align: center;
+}
+
+.fila_botones {
+    border-radius: 5px;
+    border: 1px solid #ccc #ccc;
+    display: flex;
+    gap: 32px;
+    text-align: center;
+}
+
 .container {
     display: flex;
     justify-content: space-between;
     gap: 20px;
-  }
+}
 
-  .mesas {
+.mesas {
     flex: 1;
-  }
+    border-right: 3px solid #000;
+    padding: 4px;
+}
 
-  .detalle {
-    flex: 1; /* Le damos más espacio al centro */
-  }
+.detalle {
+    flex: 1;
+    margin-left: 40px;
+    /* Le damos más espacio al centro */
+}
 
-  .acciones {
+.acciones {
     display: flex;
     flex-direction: column;
     gap: 10px;
     justify-content: flex-start;
-  }
+}
 
-  .grid {
+.grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr); /* Cambiado a 5 por fila */
+    grid-template-columns: repeat(5, 1fr);
+    /* Cambiado a 5 por fila */
     gap: 10px;
     margin-top: 20px;
-  }
+}
 
-  .mesa {
+.mesa {
     background-color: #ffdfb9;
     border-radius: 8px;
     padding: 10px;
     text-align: center;
     cursor: pointer;
     height: 100px;
-  }
+}
 
-  .estado {
+.estado {
     width: 20px;
     height: 20px;
     border-radius: 50%;
     margin: 0 auto 8px auto;
-  }
+}
 
-  .estado.ocupada {
+.estado.ocupada {
     background-color: red;
-  }
+}
 
-  .estado.libre {
+.estado.libre {
     background-color: green;
-  }
+}
 
-  .tabla {
+.tabla {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
-  }
+}
 
-  .tabla th, .tabla td {
+.tabla th,
+.tabla td {
     border-bottom: 1px solid #ccc;
     padding: 8px;
     text-align: center;
-  }
+}
 
-  .total {
+.total {
     text-align: right;
     font-size: 20px;
     font-weight: bold;
     margin-top: 10px;
-  }
+}
 
-  .mesa-titulo {
+.mesa-titulo {
     color: red;
     text-align: center;
-  }
+}
 
-  button {
+button {
     padding: 10px;
     font-size: 16px;
     background-color: #f5f5f5;
     border: none;
     cursor: pointer;
     text-align: left;
-  }
+}
 
-  button:hover {
+button:hover {
     background-color: #ddd;
-  }
+}
+
+.container {
+    padding: 20px;
+}
+
+.table {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.summary {
+    display: flex;
+    flex-direction: column;
+}
+
+textarea {
+    width: 100%;
+    margin-top: 10px;
+}
