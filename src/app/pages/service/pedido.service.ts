@@ -13,8 +13,7 @@ export class PedidoService {
         private router: Router
     ) {}
 
-    getPedidos(): Observable<any> {
-        debugger;
+    ListarPedidosMesa(): Observable<any> {
         const query = `select
         DATE_FORMAT(p.created_at,'%H:%i:%s') as pedido_hora,
         p.comentario,
@@ -39,6 +38,16 @@ export class PedidoService {
             INNER JOIN categoria c ON c.idcategoria=p1.idcategoria
             INNER JOIN usuario u ON p.id_created_at=u.idusuario
         WHERE p.estado=1  AND p.deleted  IS null  AND p1.deleted  IS null ORDER BY p1.idpedido desc;`;
+        return this.http.post<any>(this.apiUrl, { query });
+    }
+
+    BuscarPlatoSearch(value: any, type: string): Observable<any> {
+        var query = `select * FROM producto p WHERE p.preciounitario IS NOT null and deleted is null `;
+        if (type == 'nombre') {
+            query += ` and p.nombre LIKE '%${value}%'`;
+        } else if (type) {
+            query += ` and ${type} = '${value}'`;
+        }
         return this.http.post<any>(this.apiUrl, { query });
     }
 }

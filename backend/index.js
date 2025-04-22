@@ -37,7 +37,7 @@ app.use(express.static(path.join(__dirname, 'dist', 'restaurante-cevicheria')));
 
 // Endpoint de login
 app.post('/post', (req, res) => {
-  debugger
+
   const { query } = req.body;
 
   db.query(query, '', (err, results) => {

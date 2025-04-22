@@ -1,56 +1,161 @@
+<p-toast styleClass="text-2xl" />
 <div class="card">
-    <div class="container">
+    <div class="mx-auto max-w-md overflow-hidden rounded-xl bg-white md:max-w-2xl" style="max-width: 100%;">
         <!-- IZQUIERDA: MESAS -->
-        <div class="mesas">
-            <h2>Mesas</h2>
-            <div class="grid">
-                <div *ngFor="let mesa of mesas" class="mesa" (click)="seleccionarMesa(mesa)">
-                    <div class="estado" [ngClass]="{
+        <div class="md:flex">
+            <div class="mesas md:shrink-0">
+                <h2>Mesas</h2>
+                <div class="grid">
+                    <div *ngFor="let mesa of mesas" class="mesa" (click)="seleccionarMesa(mesa)">
+                        <div class="estado" [ngClass]="{
                   'ocupada': mesa.estado === '1',
                   'libre': mesa.estado === '0'
                 }"></div>
-                    <div class="texto">Mesa Nº{{ mesa.numero }}</div>
+                        <div class="texto">Mesa Nº{{ mesa.numero }}</div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- CENTRO: DETALLE DE PEDIDOS -->
+            <div class="detalle md:shrink-0  ml-auto" *ngIf="pedido_mesa_status">
+                <div class="fila_botones">
+                    <button> <i class="material-icons">edit</i>Editar</button>
+                    <button> <i class="material-icons">description</i>Ticket</button>
+                    <button><i class="material-icons">restaurant</i>Cocina</button>
+                    <button><i class="material-icons fa-solid fa-money-bill-wave"></i>Cobrar</button>
+                    <button><i class="material-icons fa-solid fa-trash"></i>Cancelar</button>
+                </div>
+                <div *ngFor="let numMesa of mesas">
+                    <div *ngIf="mesaSeleccionada?.numero == numMesa.numero;" class="mt-5">
+                        <h1 class="text-red-600 text-2xl font-bold text-center">Mesa {{ numMesa.numero }}</h1>
+                        <table class="table-auto w-full   h-auto border-collapse border border-gray-400 text-center">
+                            <thead>
+                                <tr class="">
+                                    <th class="border border-gray-300">Cantidad</th>
+                                    <th class="border border-gray-300">Categoria</th>
+                                    <th class="border border-gray-300">Pedido</th>
+                                    <th class="border border-gray-300">Lugar</th>
+                                    <th class="border border-gray-300">Precio U.</th>
+                                    <th class="border border-gray-300">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border border-gray-300"
+                                    *ngFor="let pedido of getPedidosDeMesa(numMesa.numero)">
+                                    <td>{{ pedido.cantidad }}</td>
+                                    <td>{{ pedido.categoria }}</td>
+                                    <td>{{ pedido.nombre }}</td>
+                                    <td>{{ pedido.lugarpedido == 1 ? "Mesa":"Llevar" }}</td>
+                                    <td>{{ pedido.precioU }}</td>
+                                    <td>{{ pedido.cantidad * pedido.precioU }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" class="text-right font-bold">Total</td>
+                                    <td class="font-bold">
+                                        <!-- {{ getPedidosDeMesa(numMesa)
+                                    .reduce((acc, p) => acc + p.cantidad * p.precioUnitario, 0)
+                                    }} -->
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <hr class="my-4 border-gray-300" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="detalle md:shrink-0  ml-auto" *ngIf="!pedido_mesa_status && mesaSeleccionada">
+                <i class="fa-solid fa-calculator" (click)="showModal()" style="font-size: 35px;"></i>
+
+                <div class="container">
+                    <!-- <h2>Pedidos</h2> -->
+                    <table class="table-auto w-full   h-auto border-collapse border border-gray-400 text-center">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Llevar</th>
+                                <th>Precio</th>
+                                <th>Total</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let pedidosnew of NuevoPedido">
+                                <td>{{ pedidosnew.nombre }}</td>
+                                <td>
+                                    <button (click)="incrementnewPedido(pedidosnew)">+</button>
+                                    {{ pedidosnew.cantidad }}
+                                    <button (click)="decrementnewPedido(pedidosnew)">-</button>
+                                </td>
+                                <td>
+                                    <mat-slide-toggle [(ngModel)]="pedidosnew.lugarpedido">{{ pedidosnew.lugarpedido ==
+                                        1 ?
+                                        'SI' :
+                                        'NO'
+                                        }}</mat-slide-toggle>
+                                </td>
+
+                                <td>
+                                    <input (keyup)="pricechange(pedidosnew)" type="text" style="width: 50px;" pInputText id="name" [(ngModel)]="pedidosnew.preciounitario"
+                                        required autofocus fluid />
+                                </td>
+                                <td>S/ {{ pedidosnew.total }} </td>
+                                <!-- <td>
+                                    <button (click)="remove(product)" class="btn btn-danger">🗑️</button>
+                                    <button class="btn btn-warning">⚙️</button>
+                                </td> -->
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- <div class="summary">
+                        <h4>Descuentos (-) S/ {{ discount }}</h4>
+                        <h3>Total: S/{{ total() }}</h3>
+                        <textarea placeholder="Mensaje de impresión en Cocina." rows="3"></textarea>
+                        <button (click)="save()" class="btn btn-success">Guardar</button>
+                    </div> -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- Modal CALCULTOR-->
+    <p-dialog [(visible)]="displayModalCalculator" [modal]="true" [style]="{width: '30vw'}" [closable]="true">
+        <!-- Modal content -->
+        <div class="rounded-2xl w-full max-w-md mx-auto p-6 relative">
+            <!-- Modal body -->
+            <div class="text-center">
+                <h3 class="text-lg font-medium mb-4">Ingresar Plato N°</h3>
+                <input type="number" id="NumberLote" name="NumberLote" placeholder="Número" [(ngModel)]="numeroPlato"
+                    class="w-full text-center text-3xl p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 mb-6" />
+            </div>
+            <!-- Teclado numérico -->
+            <div class="grid grid-cols-1 gap-3">
+                <ng-container *ngFor="let num of [0,1,2,3,4,5,6,7,8,9]">
+                    <div (click)="setNumbersSelectDashboard(num)"
+                        class="bg-blue-500 text-white text-2xl py-4 rounded-lg cursor-pointer hover:bg-blue-600 text-center">
+                        {{ num }}
+                    </div>
+                </ng-container>
+
+                <!-- Botón verde (✓ o enviar) -->
+                <div (click)="ListarPedidoNumeroCalculadora()"
+                    class="bg-green-500 text-white text-3xl py-4 rounded-lg cursor-pointer hover:bg-green-600 col-span-1 text-center">
+                    ✓
+                </div>
+                <!-- Botón limpiar -->
+                <div (click)="setNumbersSelectDashboard('clear')"
+                    class="bg-red-500 text-white text-lg py-4 rounded-lg cursor-pointer hover:bg-red-600 text-center">
+                    Limpiar
                 </div>
             </div>
         </div>
 
-        <!-- CENTRO: DETALLE DE PEDIDOS -->
-        <div class="detalle">
-            <h2 class="mesa-titulo">Mesa </h2>
-            <table class="tabla">
-                <thead>
-                    <tr>
-                        <th>Categoria</th>
-                        <th>Cantidad</th>
-                        <th>Pedido</th>
-                        <th>Estado</th>
-                        <th>Lugar</th>
-                        <th>Precio U.</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>D
-                <tbody>
-                    <!-- <tr *ngFor="let pedido of mesaSeleccionada.pedidos">
-                        <td>{{ pedido.categoria }}</td>
-                        <td>{{ pedido.cantidad }}</td>
-                        <td>{{ pedido.descripcion }}</td>
-                        <td><input type="checkbox"></td>
-                        <td>{{ pedido.lugar }}</td>
-                        <td>{{ pedido.precio }}</td>
-                        <td>{{ pedido.total }}</td>
-                    </tr> -->
-                </tbody>
-            </table>
-            <h2 class="total">Total </h2>
-        </div>
+    </p-dialog>
 
-        <!-- DERECHA: BOTONES -->
-        <div class="acciones">
-            <button><i class="icon lápiz"></i> Editar</button>
-            <button><i class="icon ticket"></i> Ticket</button>
-            <button><i class="icon cocina"></i> Cocina</button>
-            <button><i class="icon cobrar"></i> Cobrar</button>
-            <button><i class="icon cancelar"></i> Cancelar</button>
-        </div>
-    </div>
 </div>
+<p-confirmDialog [style]="{ width: '450px' }" />
+
+<!-- <p-confirmDialog [style]="{ width: '450px' }" /> -->
