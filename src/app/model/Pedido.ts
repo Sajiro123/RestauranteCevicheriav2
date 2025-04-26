@@ -1,6 +1,8 @@
 export interface Pedido {
+    idproducto: number;
 lugarpedido: any;
 pedido_estado: any;
+    idpedido: number;
     nombre: any;
     categoria: string;
     cantidad: number;

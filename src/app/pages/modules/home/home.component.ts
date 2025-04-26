@@ -9,6 +9,8 @@ import { ImportsModule } from '../../imports';
 import { Products } from '../../../model/Products';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { NuevoPedido } from '../../../model/NuevoPedido';
+import { concat, forkJoin, switchMap } from 'rxjs';
+import { NuevoPedidodetalle } from '../../../model/NuevoPedidodetalle';
 
 @Component({
     selector: 'app-home',
@@ -22,10 +24,25 @@ export class HomeComponent {
     products: Products[] = [];
 
     discount: number = 0;
+    switchValue: boolean = false;
 
     mesas: Mesa[] = [];
     Pedidos: Pedido[] = [];
-    NuevoPedido: NuevoPedido[] = [];
+    NuevoPedido: NuevoPedido = {
+        idpedido: 0,
+        lugarpedido: undefined,
+        pedido_estado: undefined,
+        nombre: undefined,
+        cantidad: 0,
+        descripcion: '',
+        estado: false,
+        lugar: '',
+        preciounitario: 0,
+        total: 0,
+        descuento: 0,
+        comentario: '',
+        pedidodetalle: []
+    };
 
     calculator_Dialog: boolean = false;
     displayModalCalculator = false;
@@ -34,6 +51,7 @@ export class HomeComponent {
     pedido_mesa_status: boolean = false;
 
     numeroPlato: number | null = null;
+    comentarios: string = '';
 
     constructor(
         private homeService: HomeService,
@@ -58,13 +76,16 @@ export class HomeComponent {
         this.PedidoService.BuscarPlatoSearch(this.numeroPlato, 'p.numero_carta').subscribe(
             (response) => {
                 if (response.success) {
+                    debugger;
+
                     if (response.data) {
                         this.displayModalCalculator = false;
                         this.cd.detectChanges(); // Forzar detección de cambios
                         response.data[0].cantidad = 1; // Inicializar cantidad en 1
                         response.data[0].total = response.data[0].preciounitario; // Inicializar cantidad en 1
+                        response.data[0].lugarpedido = '0'; // Inicializar cantidad en 1
 
-                        this.NuevoPedido.push(response.data[0]);
+                        this.NuevoPedido.pedidodetalle.push(response.data[0]);
                     } else {
                         this.messageService.add({ severity: 'warn', summary: 'Error', detail: 'No contiene informaciòn la consulta BuscarPlatoSearch' });
                     }
@@ -78,12 +99,12 @@ export class HomeComponent {
             }
         );
     }
-    incrementnewPedido(product: NuevoPedido) {
+    incrementnewPedido(product: NuevoPedidodetalle) {
         product.cantidad++;
         product.total = product.cantidad * product.preciounitario;
     }
 
-    decrementnewPedido(product: NuevoPedido) {
+    decrementnewPedido(product: NuevoPedidodetalle) {
         if (product.cantidad > 1) {
             product.cantidad--;
             product.total = product.cantidad * product.preciounitario;
@@ -97,15 +118,89 @@ export class HomeComponent {
     }
 
     total() {
-        return this.products.reduce((sum, product) => sum + product.preciounitario * product.cantidad, 0) - this.discount;
+        return this.NuevoPedido.pedidodetalle.reduce((sum, product) => sum + product.preciounitario * product.cantidad, 0) - this.discount;
     }
 
-    save() {
-        // Logic for saving the order
-        console.log('Order saved!', this.products);
+    RegistrarPedido() {
+        if (this.mesaSeleccionada) {
+            this.PedidoService.insertPedido(this.NuevoPedido, this.mesaSeleccionada.numero, this.comentarios)
+                .pipe(
+                    switchMap((pedidoResponse: any) => {
+                        const pedidoId = pedidoResponse.data[0].id;
+
+                        // Creamos un array de observables para los detalles
+                        const detallesObservables = this.NuevoPedido.pedidodetalle.map((element) => {
+                            element.idpedido = pedidoId;
+                            return this.PedidoService.insertPedidoDetalle(element);
+                        });
+
+                        // Usamos forkJoin para esperar a que TODOS los detalles se completen
+                        return forkJoin(detallesObservables);
+                    })
+                )
+                .subscribe({
+                    next: () => {
+                        this.ListarPedidos();
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Successful',
+                            detail: 'Pedido registrado correctamente',
+                            life: 3000
+                        });
+                    },
+                    error: (error) => {
+                        console.error('Error en el proceso completo:', error);
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: 'Ocurrió un error al registrar el pedido',
+                            life: 3000
+                        });
+                    }
+                });
+        } else {
+            alert('Seleccione una mesa para crear el pedido');
+        }
     }
-    cerrarModal() {
-        // lógica para cerrar el modal (puede ser ocultar un flag tipo `showModal = false`)
+
+    editar(mesa: Mesa): void {
+        debugger;
+        this.NuevoPedido = {
+            idpedido: 0,
+            lugarpedido: undefined,
+            pedido_estado: undefined,
+            nombre: undefined,
+            cantidad: 0,
+            descripcion: '',
+            estado: false,
+            lugar: '',
+            preciounitario: 0,
+            total: 0,
+            descuento: 0,
+            comentario: '',
+            pedidodetalle: []
+        };
+        this.pedido_mesa_status = false;
+        var status_array = this.Pedidos.filter((p) => p.mesa === mesa.numero);
+        if (status_array.length > 0) {
+            debugger
+            this.NuevoPedido.pedidodetalle = status_array.map((pedido) => ({
+                idpedido: pedido.idpedido || 0,
+                nombre: pedido.nombre || '',
+                idproducto: pedido.idproducto || 0,
+                preciounitario: pedido.precioU || 0,
+                cantidad: pedido.cantidad || 0,
+                descripcion: pedido.descripcion || '',
+                total: pedido.total || 0,
+                estado: pedido.estado || false,
+                lugarpedido: pedido.lugarpedido || '',
+                comentario: pedido.comentario || ''
+            }));
+
+            this.comentarios = status_array[0].comentario;
+        } else {
+            alert('No hay pedidos en esta mesa');
+        }
     }
 
     cargarMesas(): void {
@@ -130,8 +225,7 @@ export class HomeComponent {
         this.numeroPlato = null;
     }
 
-    pricechange(pedidosnew: NuevoPedido) {
-        debugger
+    pricechange(pedidosnew: NuevoPedidodetalle) {
         pedidosnew.total = pedidosnew.cantidad * pedidosnew.preciounitario;
     }
 
@@ -163,6 +257,22 @@ export class HomeComponent {
         );
     }
     seleccionarMesa(mesa: Mesa): void {
+        this.NuevoPedido = {
+            idpedido: 0,
+            lugarpedido: undefined,
+            pedido_estado: undefined,
+            nombre: undefined,
+            cantidad: 0,
+            descripcion: '',
+            estado: false,
+            lugar: '',
+            preciounitario: 0,
+            total: 0,
+            descuento: 0,
+            comentario: '',
+            pedidodetalle: []
+        };
+        this.comentarios = '';
         this.pedido_mesa_status = false;
         this.mesaSeleccionada = mesa;
         var status_array = this.Pedidos.filter((p) => p.mesa === mesa.numero);
@@ -176,5 +286,12 @@ export class HomeComponent {
             return this.Pedidos.filter((p) => p.mesa === numMesa);
         }
         return [];
+    }
+    onlyNumberKey(event: KeyboardEvent) {
+        const charCode = event.which ? event.which : event.keyCode;
+        // Solo permitir números (0-9)
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            event.preventDefault();
+        }
     }
 }
