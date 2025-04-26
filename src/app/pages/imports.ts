@@ -98,9 +98,43 @@ import { AutoFocusModule } from 'primeng/autofocus';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FluidModule } from 'primeng/fluid';
+import { SelectModule } from 'primeng/select';
+import { DatePickerModule } from 'primeng/datepicker';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { TextareaModule } from 'primeng/textarea';
 
 @NgModule({
     imports: [
+        CommonModule,
+        FormsModule,
+        InputTextModule,
+        ButtonModule,
+        CheckboxModule,
+        RadioButtonModule,
+        SelectButtonModule,
+        InputGroupModule,
+        FluidModule,
+        IconFieldModule,
+        InputIconModule,
+        FloatLabelModule,
+        AutoCompleteModule,
+        InputNumberModule,
+        SliderModule,
+        RatingModule,
+        ColorPickerModule,
+        KnobModule,
+        SelectModule,
+        DatePickerModule,
+        ToggleButtonModule,
+        ToggleSwitchModule,
+        TreeSelectModule,
+        MultiSelectModule,
+        ListboxModule,
+        InputGroupAddonModule,
+        TextareaModule,
+
         AvatarModule,
         AvatarGroupModule,
         AnimateOnScrollModule,
@@ -201,6 +235,33 @@ import { NgModule } from '@angular/core';
         AutoFocusModule
     ],
     exports: [
+        CommonModule,
+        FormsModule,
+        InputTextModule,
+        ButtonModule,
+        CheckboxModule,
+        RadioButtonModule,
+        SelectButtonModule,
+        InputGroupModule,
+        FluidModule,
+        IconFieldModule,
+        InputIconModule,
+        FloatLabelModule,
+        AutoCompleteModule,
+        InputNumberModule,
+        SliderModule,
+        RatingModule,
+        ColorPickerModule,
+        KnobModule,
+        SelectModule,
+        DatePickerModule,
+        ToggleButtonModule,
+        ToggleSwitchModule,
+        TreeSelectModule,
+        MultiSelectModule,
+        ListboxModule,
+        InputGroupAddonModule,
+        TextareaModule,
         AvatarModule,
         AvatarGroupModule,
         AnimateOnScrollModule,
