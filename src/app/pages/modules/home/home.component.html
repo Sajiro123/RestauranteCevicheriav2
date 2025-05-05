@@ -18,13 +18,13 @@
 
 
             <!-- CENTRO: DETALLE DE PEDIDOS -->
-            <div class="detalle md:shrink-0  ml-auto" *ngIf="pedido_mesa_status">
-
+            <div class="detalle md:shrink-0  ml-auto" *ngIf="pedido_mesa_status  ">
                 <div *ngFor="let numMesa of mesas">
 
                     <div *ngIf="mesaSeleccionada?.numero == numMesa.numero;" class="mt-5">
                         <div class="fila_botones">
-                            <button (click)="editar(numMesa)"> <i class="material-icons">edit</i>Editar</button>
+                            <button (click)="editar(numMesa,NuevoPedido)"> <i
+                                    class="material-icons">edit</i>Editar</button>
                             <button> <i class="material-icons">description</i>Ticket</button>
                             <button><i class="material-icons">restaurant</i>Cocina</button>
                             <button><i class="material-icons fa-solid fa-money-bill-wave"></i>Cobrar</button>
@@ -44,7 +44,7 @@
                             </thead>
                             <tbody>
                                 <tr class="border border-gray-300"
-                                    *ngFor="let pedido of getPedidosDeMesa(numMesa.numero)">
+                                    *ngFor="let pedido of getPedidosDeMesa(numMesa.numero,pedido_mesa_status)">
                                     <td>{{ pedido.cantidad }}</td>
                                     <td>{{ pedido.categoria }}</td>
                                     <td>{{ pedido.nombre }}</td>
@@ -101,8 +101,8 @@
                                         <button (click)="decrementnewPedido(pedidosnew)">-</button>
                                     </td>
                                     <td>
-                                        <p-toggleSwitch [(ngModel)]="pedidosnew.lugarpedido" [trueValue]="1"
-                                            [falseValue]="0">
+                                        <p-toggleSwitch [(ngModel)]="pedidosnew.lugarpedido" [trueValue]="'1'"
+                                            [falseValue]="'0'">
                                         </p-toggleSwitch>
                                         <!-- <mat-slide-toggle [(ngModel)]="pedidosnew.lugarpedido">{{ pedidosnew.lugarpedido
                                             ==
@@ -128,9 +128,10 @@
                             <h3>Total: S/{{ total() }}</h3>
                         </div>
                         <div class="text-right mt-4">
-                            <p-button (click)="RegistrarPedido()" severity="success"
-                                [style]="{'width': '207px','text-align': 'center' }"
-                                class="btn btn-success">Guardar</p-button>
+                            <p-button [label]="tipomodal =='Registrar' ? 'REGISTRAR PEDIDO' : 'EDITAR PEDIDO'"
+                                (click)="FunctionButtonPedido(NuevoPedido)" severity="success"
+                                [style]="{'width': '207px','text-align': 'center' }" class="btn btn-success">
+                            </p-button>
                         </div>
 
                         <textarea [(ngModel)]="comentarios" pTextarea placeholder="Mensaje de impresión en Cocina."
