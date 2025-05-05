@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, switchMap } from 'rxjs';
+import { catchError, mergeMap, Observable, switchMap, throwError } from 'rxjs';
 import { Mesa } from '../../model/Mesa';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -8,6 +8,44 @@ import { NuevoPedidodetalle } from '../../model/NuevoPedidodetalle';
 
 @Injectable({ providedIn: 'root' })
 export class PedidoService {
+    async EditarPedido(arraypedido: NuevoPedido, comentario: string) {
+        const date = new Date();
+        const fecha = date.toISOString().split('T')[0];
+
+        // Calcular el total
+        const total = arraypedido.pedidodetalle.reduce((sum: number, product: { preciounitario: number; cantidad: number }) => sum + product.preciounitario * product.cantidad, 0);
+
+        // Consulta SQL con valores directamente interpolados (asegúrate de sanitizarlos)
+        const updatePedidoQuery = `
+            UPDATE pedido
+            SET comentario = '${this.escapeSqlValue(comentario)}',
+                total_pedidos = ${arraypedido.pedidodetalle.length},
+                updated_at = '${fecha}',
+                total = ${total}
+            WHERE idpedido = '${arraypedido.idpedido}'`;
+
+        // Consulta para marcar como eliminados los detalles
+        const deleteDetallesQuery = `
+            UPDATE pedidodetalle
+            SET deleted = 1
+            WHERE idpedido = '${arraypedido.idpedido}'`;
+
+        // Ejecutar secuencialmente
+        return this.http.post(this.apiUrl, { query: updatePedidoQuery }).pipe(
+            switchMap(() => this.http.post(this.apiUrl, { query: deleteDetallesQuery })),
+            catchError((error) => {
+                console.error('Error al editar pedido:', error);
+                return throwError(error);
+            })
+        );
+    }
+
+    // Método helper para escapar valores SQL (básico)
+    private escapeSqlValue(value: string): string {
+        if (!value) return '';
+        return value.replace(/'/g, "''");
+    }
+
     private apiUrl = 'http://localhost:3000/post';
 
     constructor(

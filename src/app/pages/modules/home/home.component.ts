@@ -28,6 +28,7 @@ export class HomeComponent {
 
     mesas: Mesa[] = [];
     Pedidos: Pedido[] = [];
+
     NuevoPedido: NuevoPedido = {
         idpedido: 0,
         lugarpedido: undefined,
@@ -52,6 +53,7 @@ export class HomeComponent {
 
     numeroPlato: number | null = null;
     comentarios: string = '';
+    tipomodal: any = 'Registrar';
 
     constructor(
         private homeService: HomeService,
@@ -121,6 +123,57 @@ export class HomeComponent {
         return this.NuevoPedido.pedidodetalle.reduce((sum, product) => sum + product.preciounitario * product.cantidad, 0) - this.discount;
     }
 
+    async EditarPedido() {
+        if (this.mesaSeleccionada) {
+            (await this.PedidoService.EditarPedido(this.NuevoPedido, this.comentarios))
+                .pipe(
+                    switchMap((pedidoResponse: any) => {
+                        debugger;
+                        // Creamos un array de observables para los detalles
+                        const detallesObservables = this.NuevoPedido.pedidodetalle.map((element) => {
+                            element.idpedido = this.NuevoPedido.idpedido;
+                            element.id_created_at = 0;
+                            return this.PedidoService.insertPedidoDetalle(element);
+                        });
+
+                        // Usamos forkJoin para esperar a que TODOS los detalles se completen
+                        return forkJoin(detallesObservables);
+                    })
+                )
+                .subscribe({
+                    next: () => {
+                        this.ListarPedidos();
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Successful',
+                            detail: 'Pedido Modificado correctamente',
+                            life: 3000
+                        });
+                    },
+                    error: (error) => {
+                        console.error('Error en el proceso completo:', error);
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: 'Ocurrió un error al registrar el pedido',
+                            life: 3000
+                        });
+                    }
+                });
+        } else {
+            alert('Seleccione una mesa para crear el pedido');
+        }
+    }
+
+    FunctionButtonPedido(pedido: NuevoPedido) {
+        debugger;
+        if (this.tipomodal === 'Registrar') {
+            this.RegistrarPedido();
+        } else if (this.tipomodal === 'Editar') {
+            this.EditarPedido();
+        }
+    }
+
     RegistrarPedido() {
         if (this.mesaSeleccionada) {
             this.PedidoService.insertPedido(this.NuevoPedido, this.mesaSeleccionada.numero, this.comentarios)
@@ -163,27 +216,27 @@ export class HomeComponent {
         }
     }
 
-    editar(mesa: Mesa): void {
+    editar(mesa: Mesa, pedido: NuevoPedido): void {
         debugger;
-        this.NuevoPedido = {
-            idpedido: 0,
-            lugarpedido: undefined,
-            pedido_estado: undefined,
-            nombre: undefined,
-            cantidad: 0,
-            descripcion: '',
-            estado: false,
-            lugar: '',
-            preciounitario: 0,
-            total: 0,
-            descuento: 0,
-            comentario: '',
-            pedidodetalle: []
-        };
+        // this.LimpiarNuevoPedido();
         this.pedido_mesa_status = false;
         var status_array = this.Pedidos.filter((p) => p.mesa === mesa.numero);
         if (status_array.length > 0) {
-            debugger
+            this.NuevoPedido = {
+                idpedido: status_array[0]?.idpedido || 0,
+                lugarpedido: undefined,
+                pedido_estado: undefined,
+                nombre: undefined,
+                cantidad: status_array.length,
+                descripcion: '',
+                estado: false,
+                lugar: '',
+                preciounitario: 0,
+                total: this.NuevoPedido.pedidodetalle.reduce((sum: number, product: { preciounitario: number; cantidad: number }) => sum + product.preciounitario * product.cantidad, 0),
+                descuento: 0,
+                comentario: '',
+                pedidodetalle: []
+            };
             this.NuevoPedido.pedidodetalle = status_array.map((pedido) => ({
                 idpedido: pedido.idpedido || 0,
                 nombre: pedido.nombre || '',
@@ -256,7 +309,87 @@ export class HomeComponent {
             }
         );
     }
+
     seleccionarMesa(mesa: Mesa): void {
+        this.LimpiarNuevoPedido();
+        this.comentarios = '';
+        this.pedido_mesa_status = false;
+        this.mesaSeleccionada = mesa;
+        var status_array = this.Pedidos.filter((p) => p.mesa === mesa.numero);
+        if (status_array.length > 0) {
+            this.pedido_mesa_status = true;
+            this.tipomodal = 'Editar';
+        } else {
+            this.tipomodal = 'Registrar';
+        }
+    }
+
+    getPedidosDeMesa(numMesa: string, statuspedido: boolean): Pedido[] {
+        debugger;
+        if (statuspedido == true) {
+            var status_array = this.Pedidos.filter((p) => p.mesa === numMesa);
+            if (status_array.length > 0) {
+                this.NuevoPedido.pedidodetalle = status_array.map((pedido) => ({
+                    idpedido: pedido.idpedido || 0,
+                    nombre: pedido.nombre || '',
+                    idproducto: pedido.idproducto || 0,
+                    preciounitario: pedido.precioU || 0,
+                    cantidad: pedido.cantidad || 0,
+                    descripcion: pedido.descripcion || '',
+                    total: pedido.total || 0,
+                    estado: pedido.estado || false,
+                    lugarpedido: pedido.lugarpedido || '',
+                    comentario: pedido.comentario || ''
+                }));
+
+                this.NuevoPedido = {
+                    idpedido: status_array[0]?.idpedido || 0,
+                    lugarpedido: undefined,
+                    pedido_estado: undefined,
+                    nombre: undefined,
+                    cantidad: 0,
+                    descripcion: '',
+                    estado: false,
+                    lugar: '',
+                    preciounitario: 0,
+                    total: this.NuevoPedido.pedidodetalle.reduce((sum: number, product: { preciounitario: number; cantidad: number }) => sum + product.preciounitario * product.cantidad, 0),
+                    descuento: 0,
+                    comentario: '',
+                    pedidodetalle: []
+                };
+
+                // = status_array.map((pedido) => ({
+                //     idpedido: pedido.idpedido || 0,
+                //     nombre: pedido.nombre || '',
+                //     idproducto: pedido.idproducto || 0,
+                //     preciounitario: pedido.precioU || 0,
+                //     cantidad: pedido.cantidad || 0,
+                //     descripcion: pedido.descripcion || '',
+                //     total: pedido.total || 0,
+                //     estado: pedido.estado || false,
+                //     lugarpedido: pedido.lugarpedido || '',
+                //     comentario: pedido.comentario || ''
+                // }));
+
+                this.comentarios = status_array[0].comentario;
+                return this.Pedidos.filter((p) => p.mesa === numMesa);
+            } else {
+                alert('No hay pedidos en esta mesa');
+            }
+        } else if (this.mesaSeleccionada) {
+            return this.Pedidos.filter((p) => p.mesa === numMesa);
+        }
+        return [];
+    }
+    onlyNumberKey(event: KeyboardEvent) {
+        const charCode = event.which ? event.which : event.keyCode;
+        // Solo permitir números (0-9)
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            event.preventDefault();
+        }
+    }
+
+    LimpiarNuevoPedido(): void {
         this.NuevoPedido = {
             idpedido: 0,
             lugarpedido: undefined,
@@ -272,26 +405,5 @@ export class HomeComponent {
             comentario: '',
             pedidodetalle: []
         };
-        this.comentarios = '';
-        this.pedido_mesa_status = false;
-        this.mesaSeleccionada = mesa;
-        var status_array = this.Pedidos.filter((p) => p.mesa === mesa.numero);
-        if (status_array.length > 0) {
-            this.pedido_mesa_status = true;
-        }
-    }
-
-    getPedidosDeMesa(numMesa: string) {
-        if (this.mesaSeleccionada) {
-            return this.Pedidos.filter((p) => p.mesa === numMesa);
-        }
-        return [];
-    }
-    onlyNumberKey(event: KeyboardEvent) {
-        const charCode = event.which ? event.which : event.keyCode;
-        // Solo permitir números (0-9)
-        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
-            event.preventDefault();
-        }
     }
 }

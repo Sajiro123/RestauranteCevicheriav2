@@ -1,4 +1,5 @@
 export interface Pedido {
+    [x: string]: any;
     idproducto: number;
 lugarpedido: any;
 pedido_estado: any;
