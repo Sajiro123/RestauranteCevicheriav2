@@ -1,8 +1,8 @@
 export interface Pedido {
     [x: string]: any;
     idproducto: number;
-lugarpedido: any;
-pedido_estado: any;
+    lugarpedido: any;
+    pedido_estado: any;
     idpedido: number;
     nombre: any;
     categoria: string;
@@ -20,4 +20,5 @@ pedido_estado: any;
     yape: number;
     plin: number;
     efectivo: number;
+    seleccionado?: boolean;
 }
