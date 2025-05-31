@@ -7,9 +7,11 @@
                 <h2>Mesas</h2>
                 <div class="grid">
                     <div *ngFor="let mesa of mesas" class="mesa" (click)="seleccionarMesa(mesa)">
+
+
                         <div class="estado" [ngClass]="{
-                  'ocupada': mesa.estado === '1',
-                  'libre': mesa.estado === '0'
+                  'ocupada': estadomesa[+mesa.numero].value.toString() === '1',
+                  'libre': estadomesa[+mesa.numero].value.toString() === '0'
                 }"></div>
                         <div class="texto">Mesa Nº{{ mesa.numero }}</div>
                     </div>
@@ -18,19 +20,27 @@
 
 
             <!-- CENTRO: DETALLE DE PEDIDOS -->
-            <div class="detalle md:shrink-0  ml-auto" *ngIf="pedido_mesa_status  ">
+            <div class="detalle md:shrink-0  ml-auto" *ngIf="pedido_mesa_status">
                 <div *ngFor="let numMesa of mesas">
 
                     <div *ngIf="mesaSeleccionada?.numero == numMesa.numero;" class="mt-5">
                         <div class="fila_botones">
                             <button (click)="editar(numMesa,NuevoPedido)"> <i
                                     class="material-icons">edit</i>Editar</button>
-                            <button> <i class="material-icons">description</i>Ticket</button>
-                            <button><i class="material-icons">restaurant</i>Cocina</button>
-                            <button><i class="material-icons fa-solid fa-money-bill-wave"></i>Cobrar</button>
-                            <button><i class="material-icons fa-solid fa-trash"></i>Cancelar</button>
+                            <button (click)="generatePDF(NuevoPedido)"> <i
+                                    class="material-icons">description</i>Ticket</button>
+                            <button (click)="generateCocinaPDF(NuevoPedido)"><i
+                                    class="material-icons">restaurant</i>Cocina</button>
+                            <button (click)="CobrarDialog(numMesa)"><i
+                                    class="material-icons fa-solid fa-money-bill-wave"></i>Cobrar</button>
+                            <button (click)="deletepedidoModal()"><i
+                                    class="material-icons fa-solid fa-trash"></i>Cancelar</button>
                         </div>
-                        <h1 class="text-red-600 text-2xl font-bold text-center">Mesa {{ numMesa.numero }}</h1>
+                        <h2 class="text-red-600  font-bold text-center">Mesa {{ numMesa.numero }}
+                            &nbsp; <p-button icon="pi pi-file-pdf" severity="danger"
+                                (onClick)="imprimirpedidodialog(Pedidos)" />
+                        </h2>
+
                         <table class="table-auto w-full   h-auto border-collapse border border-gray-400 text-center">
                             <thead>
                                 <tr class="">
@@ -48,16 +58,18 @@
                                     <td>{{ pedido.cantidad }}</td>
                                     <td>{{ pedido.categoria }}</td>
                                     <td>{{ pedido.nombre }}</td>
-                                    <td>{{ pedido.lugarpedido == 1 ? "Mesa":"Llevar" }}</td>
+                                    <td>{{ pedido.lugarpedido == 1 ? "Llevar":"Mesa" }}</td>
                                     <td>{{ pedido.precioU }}</td>
                                     <td>{{ pedido.cantidad * pedido.precioU }}</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="6" class="text-right font-bold">Total</td>
+                                    <td colspan="5" class="text-right font-bold">
+                                        <h3>Total</h3>
+                                    </td>
                                     <td class="font-bold">
-                                        <!-- {{ getPedidosDeMesa(numMesa)
-                                    .reduce((acc, p) => acc + p.cantidad * p.precioUnitario, 0)
-                                    }} -->
+                                        <h3>
+                                            {{'S/' +calculateTotalPedidos(numMesa.numero, pedido_mesa_status) }}
+                                        </h3>
                                     </td>
                                 </tr>
                             </tbody>
@@ -68,19 +80,24 @@
             </div>
 
             <div class="detalle md:shrink-0  ml-auto" *ngIf="!pedido_mesa_status && mesaSeleccionada">
-                <div class="md:flex">
-                    <div class="text-left mt-4">
+                <div class="flex">
+                    <div class="w-14 text-left mt-4 mr-1" *ngIf="NuevoPedido.pedidodetalle.length > 0">
+                        <p-button (click)="returntoMesas()" severity="info">
+                            <i class="fa-solid fa-arrow-left" style="font-size: 35px;cursor: pointer;"></i>
+                        </p-button>
+                    </div>
+                    <div class="w-14 text-left mt-4 ml-6">
                         <p-button (click)="showModal()">
                             <i class="fa-solid fa-calculator" style="font-size: 35px;cursor: pointer;"></i>
                         </p-button>
                     </div>
-                    <div class="text-right ml-6">
-                        <h2>Pedido de Mesa {{ this.mesaSeleccionada.numero }}</h2>
+
+                    <div class="w-32 flex-auto text-center  ">
+                        <h2 class="text-red-600">Pedido de Mesa {{ this.mesaSeleccionada.numero }}</h2>
                     </div>
                 </div>
                 <div class="container">
                     <div class="summary">
-
                         <table class="table-auto w-full   h-auto border-collapse border border-gray-400 text-center">
                             <thead>
                                 <tr>
@@ -104,12 +121,6 @@
                                         <p-toggleSwitch [(ngModel)]="pedidosnew.lugarpedido" [trueValue]="'1'"
                                             [falseValue]="'0'">
                                         </p-toggleSwitch>
-                                        <!-- <mat-slide-toggle [(ngModel)]="pedidosnew.lugarpedido">{{ pedidosnew.lugarpedido
-                                            ==
-                                            1 ?
-                                            'SI' :
-                                            'NO'
-                                            }}</mat-slide-toggle> -->
                                     </td>
                                     <td>
                                         <input (keypress)="onlyNumberKey($event)" (keyup)="pricechange(pedidosnew)"
@@ -118,8 +129,9 @@
                                     </td>
                                     <td>S/ {{ pedidosnew.total }} </td>
                                     <td>
-                                        <!-- <button (click)="remove(pedidosnew)" class="btn btn-danger">🗑️</button> -->
-                                        <button class="btn btn-warning">⚙️</button>
+                                        <button (click)="remove(pedidosnew)" class="btn btn-danger"
+                                            (click)="trashPedido(pedidosnew)"><i class="fa-solid fa-trash"></i></button>
+                                        <button class="btn btn-warning"><i class="fa-solid fa-gear"></i></button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -137,6 +149,24 @@
                         <textarea [(ngModel)]="comentarios" pTextarea placeholder="Mensaje de impresión en Cocina."
                             rows="3"></textarea>
 
+                        <div class="input-group mt-4 modal-body">
+                            <input pInputText type="text" name="plato" id="idplatotext" (keypress)="AddKeyPress($event,buscarPlato);"
+                                placeholder="Ingresar nombre del plato"
+                                class="h-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                [(ngModel)]="buscarPlato" />
+
+                        </div>
+                        <div class="col-md-12 modal-body">
+                            <div class="" style="overflow: scroll; height: 300px;">
+                                <table class="table table-hover table-sm" id="listarPlatos">
+                                    <tbody>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+
                     </div>
                 </div>
             </div>
@@ -144,7 +174,7 @@
         </div>
     </div>
     <!-- Modal CALCULTOR-->
-    <p-dialog [(visible)]="displayModalCalculator" [modal]="true" [style]="{width: '30vw'}" [closable]="true">
+    <p-dialog [(visible)]="displayModalCalculator" [modal]="true" [style]="{width: '30vw'}">
         <!-- Modal content -->
         <div class="rounded-2xl w-full max-w-md mx-auto p-6 relative">
             <!-- Modal body -->
@@ -177,4 +207,131 @@
 
     </p-dialog>
 </div>
+<p-dialog [(visible)]="Cobrar_Dialog" [position]="'top'" header="Cobrar Pedido" [style]="{ width: '600px' }"
+    [modal]="true" [draggable]="false" [resizable]="false" styleClass="p-fluid">
+    <ng-template pTemplate="content">
+        <div class="px-6 py-2 space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <label for="efectivo" class="block text-sm font-medium text-gray-700">💵Efectivo</label>
+                    <input id="efectivo" type="number" [(ngModel)]="Pedido_cobrar.efectivo"
+                        class="w-full mt-1 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" />
+                </div>
+                <div>
+                    <label for="visa" class="block text-sm font-medium text-gray-700">💳Visa</label>
+                    <input id="visa" type="number" [(ngModel)]="Pedido_cobrar.visa"
+                        class="w-full mt-1 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" />
+                </div>
+                <div>
+                    <label for="yape" class="block text-sm font-medium text-gray-700">📱Yape</label>
+                    <input id="yape" type="number" [(ngModel)]="Pedido_cobrar.yape"
+                        class="w-full mt-1 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" />
+                </div>
+                <div>
+                    <label for="plin" class="block text-sm font-medium text-gray-700">📱Plin</label>
+                    <input id="plin" type="number" [(ngModel)]="Pedido_cobrar.plin"
+                        class="w-full mt-1 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" />
+                </div>
+            </div>
+            <div>
+                <label for="total" class="block text-sm font-semibold text-gray-800">Total</label>
+                <input id="total" type="number" disabled [(ngModel)]="NuevoPedido.total"
+                    class="w-full mt-1 bg-gray-100 border border-gray-300 text-blue-600 font-bold text-lg rounded-md px-3 py-2 cursor-not-allowed" />
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-4 px-6 pb-4">
+            <p-button styleClass="p-button-raised p-button-primary" icon="pi pi-save" label="Cobrar"
+                (onClick)="CobrarPedido(NuevoPedido)">
+            </p-button>
+
+            <p-button styleClass="p-button-raised p-button-danger" icon="pi pi-times" label="Cancelar"
+                (onClick)="hideDialog()">
+            </p-button>
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Modal PDF CLIENTE-->
+<p-dialog [position]="'top'" [(visible)]="PDF_Dialog" [style]="{ width: '500px', height: '880px'}"
+    (onHide)="PDF_Dialog = false" [closeOnEscape]="true" header="Imprimir Cliente" [modal]="true" [draggable]="false"
+    [resizable]="false" styleClass="p-fluid">
+    <div class="pdf-container">
+        <iframe *ngIf="pdfUrl" [src]="pdfUrl" width="100%" height="650px" frameborder="0"></iframe>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button styleClass="p-button-raised p-button-danger" label="Cerrar" icon="pi pi-times"
+            (onClick)="hideDialogPdf()" [style]="{'margin-left': '20px','margin-top': '55px;' }"></p-button>
+    </ng-template>
+</p-dialog>
+<!-- Modal PDF COCINA-->
+
+<p-dialog [position]="'top'" [(visible)]="CocinaPdf_Dialog" [style]="{ width: '500px', height: '880px'}"
+    header="Imprimir Cocina" [modal]="true" [draggable]="false" [resizable]="false" styleClass="p-fluid">
+    <div class="pdf-container">
+        <!-- <iframe [src]="pdfUrl" [ngModel]="" width="100%" height="500px"></iframe>ç -->
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button styleClass="p-button-raised p-button-danger" label="Cerrar" icon="pi pi-times"
+            (onClick)="hideDialogPdf()" [style]="{'margin-left': '20px','margin-top': '55px;' }"></p-button>
+    </ng-template>
+</p-dialog>
+<!-- Modal PDF ELIMINAR PEDIDO-->
+
+<p-dialog header="Eliminar Pedido" [modal]="true" [(visible)]="eliminarPedidoDialog" [style]="{ width: '25rem' }">
+    <div class="flex items-center gap-4 mb-2">
+        <label for="username" class="font-semibold w-24">Motivo:</label>
+    </div>
+    <textarea #motivoTextarea class="flex-auto" autocomplete="off" required [(ngModel)]="motivo"></textarea>
+    <div class="flex items-center gap-4 mb-2">
+        <label for="username" class="font-semibold w-24">Responsable:</label>
+    </div>
+    <textarea #responsableTextarea class="flex-auto" autocomplete="off" required [(ngModel)]="responsable"></textarea>
+
+    <ng-template pTemplate="footer">
+        <p-button label="Guardar" icon="pi pi-save" (onClick)="deletePedido()" />
+
+        <p-button styleClass="p-button-raised p-button-danger" label="Cerrar" icon="pi pi-times"
+            (onClick)="hideDialogPdf()" [style]="{'margin-left': '20px','margin-top': '55px;' }"></p-button>
+    </ng-template>
+</p-dialog>
+<!-- Modal PDF ESCOGER PEDIDO-->
+
+<p-dialog header="PDF" [modal]="true" [(visible)]="imprimirPedidoDialog" [style]="{ width: '500px', height: '880px'}">
+    <div class="container">
+        <table class="table-auto w-full h-auto border-collapse border border-gray-400 text-center">
+            <thead>
+                <tr>
+                    <th class="border border-gray-300">
+                        <input type="checkbox" class="w-6 h-6" (change)="toggleTodos($event)" />
+                    </th>
+                    <th class="border border-gray-300">Cantidad</th>
+                    <th class="border border-gray-300">Pedido</th>
+                    <th class="border border-gray-300">Precio U.</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr *ngFor="let pedido of getPedidosDeMesa(mesaSeleccionada?.numero,pedido_mesa_status)">
+                    <td class="">
+                        <input type="checkbox" class="w-6 h-6" [(ngModel)]="pedido.seleccionado" />
+                    </td>
+                    <td>{{ pedido.cantidad }}</td>
+                    <td>{{ pedido.nombre }}</td>
+                    <td>{{ pedido.precioU }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+    <div class="flex justify-end mt-4">
+        <p-button class="text-white font-bold py-2 px-4 " severity="danger" (click)="imprimirSeleccionados()">
+            🖨️ Imprimir seleccionados
+        </p-button>
+    </div>
+</p-dialog>
+
+
 <p-confirmDialog [style]="{ width: '450px' }" />

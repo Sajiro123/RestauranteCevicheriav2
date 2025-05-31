@@ -14,8 +14,8 @@ export interface NuevoPedido {
     descuento: number;
     comentario: string;
     pedidodetalle: NuevoPedidodetalle[];
-    // visa: number;
-    // yape: number;
-    // plin: number;
-    // efectivo: number;
+    visa: number;
+    yape: number;
+    plin: number;
+    efectivo: number;
 }
