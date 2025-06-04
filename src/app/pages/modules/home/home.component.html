@@ -1,3 +1,17 @@
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+        background: #f5f5f5;
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #222;
+    }
+</style>
 <p-toast styleClass="text-2xl" />
 <div class="card">
     <div class="mx-auto max-w-md overflow-hidden rounded-xl bg-white md:max-w-2xl" style="max-width: 100%;">
@@ -7,8 +21,6 @@
                 <h2>Mesas</h2>
                 <div class="grid">
                     <div *ngFor="let mesa of mesas" class="mesa" (click)="seleccionarMesa(mesa)">
-
-
                         <div class="estado" [ngClass]="{
                   'ocupada': estadomesa[+mesa.numero].value.toString() === '1',
                   'libre': estadomesa[+mesa.numero].value.toString() === '0'
@@ -81,7 +93,8 @@
 
             <div class="detalle md:shrink-0  ml-auto" *ngIf="!pedido_mesa_status && mesaSeleccionada">
                 <div class="flex">
-                    <div class="w-14 text-left mt-4 mr-1" *ngIf="NuevoPedido.pedidodetalle.length > 0">
+                    <div class="w-14 text-left mt-4 mr-1"
+                        *ngIf="NuevoPedido.pedidodetalle.length > 0 && tipomodal == 'Editar'">
                         <p-button (click)="returntoMesas()" severity="info">
                             <i class="fa-solid fa-arrow-left" style="font-size: 35px;cursor: pointer;"></i>
                         </p-button>
@@ -107,11 +120,23 @@
                                     <th>Precio</th>
                                     <th>Total</th>
                                     <th>Acciones</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let pedidosnew of NuevoPedido.pedidodetalle">
-                                    <td>{{ pedidosnew.nombre }}</td>
+                                    <td>
+                                        <div style="display: flex; flex-direction: column;">
+                                            <span>{{ pedidosnew.nombre }}</span>
+                                            <div style="margin-top: 5px; display: flex; flex-wrap: wrap; gap: 5px;">
+                                                @for (topping of pedidosnew.idtopings; track topping.idtopings) {
+                                                <p-tag *ngIf="topping.idtopings != 0">
+                                                    <div>{{ topping.nombre }}</div>
+                                                </p-tag>
+                                                }
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td>
                                         <button (click)="incrementnewPedido(pedidosnew)">+</button>
                                         {{ pedidosnew.cantidad }}
@@ -131,7 +156,49 @@
                                     <td>
                                         <button (click)="remove(pedidosnew)" class="btn btn-danger"
                                             (click)="trashPedido(pedidosnew)"><i class="fa-solid fa-trash"></i></button>
-                                        <button class="btn btn-warning"><i class="fa-solid fa-gear"></i></button>
+                                    </td>
+                                    <td>
+                                        <div class="flex flex-wrap gap-2">
+                                            <p-button type="button" class="btn btn-danger"
+                                                (click)="toggleDataTable(op2, $event, pedidosnew)">
+                                                <i class="fa-solid fa-gear"></i></p-button>
+                                            <p-popover #op2 id="overlay_panel"
+                                                [style]="{ width: '650px',height: '400px' }">
+                                                <div class="flex justify-end mt-6">
+                                                    <div style="margin-right: 100px !important;"
+                                                        class="font-semibold text-xl">Seleccionar Opciones :</div>
+
+                                                    <p-button label="Cerrar" icon="pi pi-times" (onClick)="op2.hide()"
+                                                        class="mr-2" />
+                                                    <p-button label="Guardar" icon="pi pi-save"
+                                                        (onClick)="agregarToppingsPedido(pedidosnew)"
+                                                        severity="danger" />
+
+                                                </div>
+
+                                                <p-multiselect #multiselect [options]="multiselectToppings"
+                                                    [(ngModel)]="selectedToppings" class="w-full mt-6"
+                                                    placeholder="Seleccionar más de uno" optionLabel="nombre"
+                                                    display="chip" [filter]="true">
+
+                                                    <ng-template pTemplate="selectedItems" let-toppings>
+                                                        @for (topping of toppings; track topping.idtopings) {
+                                                        <div
+                                                            class="inline-flex items-center py-1 px-2 bg-primary text-primary-contrast rounded-border mr-2">
+                                                            <div>{{ topping.nombre }}</div>
+                                                        </div>
+                                                        }
+                                                    </ng-template>
+
+                                                    <ng-template pTemplate="item" let-topping>
+                                                        <div class="flex items-center">
+                                                            <div>{{ topping.nombre }}</div>
+                                                        </div>
+                                                    </ng-template>
+                                                </p-multiselect>
+                                            </p-popover>
+                                            <p-toast />
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -150,10 +217,15 @@
                             rows="3"></textarea>
 
                         <div class="input-group mt-4 modal-body">
-                            <input pInputText type="text" name="plato" id="idplatotext" (keypress)="AddKeyPress($event,buscarPlato);"
-                                placeholder="Ingresar nombre del plato"
-                                class="h-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                [(ngModel)]="buscarPlato" />
+                            <p-iconfield>
+
+                                <p-inputicon styleClass="pi pi-search" />
+                                <input pInputText type="text" name="plato" id="idplatotext"
+                                    (keypress)="AddKeyPress($event,buscarPlato);"
+                                    placeholder="Ingresar nombre del plato"
+                                    class="h-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    [(ngModel)]="buscarPlato" />
+                            </p-iconfield>
 
                         </div>
                         <div class="col-md-12 modal-body">
@@ -175,36 +247,29 @@
     </div>
     <!-- Modal CALCULTOR-->
     <p-dialog [(visible)]="displayModalCalculator" [modal]="true" [style]="{width: '30vw'}">
-        <!-- Modal content -->
-        <div class="rounded-2xl w-full max-w-md mx-auto p-6 relative">
-            <!-- Modal body -->
-            <div class="text-center">
-                <h3 class="text-lg font-medium mb-4">Ingresar Plato N°</h3>
-                <input type="number" id="NumberLote" name="NumberLote" placeholder="Número" [(ngModel)]="numeroPlato"
-                    class="w-full text-center text-3xl p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 mb-6" />
-            </div>
-            <!-- Teclado numérico -->
-            <div class="grid grid-cols-1 gap-3">
-                <ng-container *ngFor="let num of [0,1,2,3,4,5,6,7,8,9]">
-                    <div (click)="setNumbersSelectDashboard(num)"
-                        class="bg-blue-500 text-white text-2xl py-4 rounded-lg cursor-pointer hover:bg-blue-600 text-center">
-                        {{ num }}
-                    </div>
-                </ng-container>
-
-                <!-- Botón verde (✓ o enviar) -->
-                <div (click)="ListarPedidoNumeroCalculadora()"
-                    class="bg-green-500 text-white text-3xl py-4 rounded-lg cursor-pointer hover:bg-green-600 col-span-1 text-center">
-                    ✓
-                </div>
-                <!-- Botón limpiar -->
-                <div (click)="setNumbersSelectDashboard('clear')"
-                    class="bg-red-500 text-white text-lg py-4 rounded-lg cursor-pointer hover:bg-red-600 text-center">
-                    Limpiar
-                </div>
+        <div class="calculator rounded-2xl w-full max-w-md mx-auto p-6 relative" role="region"
+            aria-label="Calculadora de pedido para restaurante">
+            <h3>Calculadora de Pedidos</h3>
+            <!-- <div id="display" class="display" aria-live="polite" aria-atomic="true">0</div> -->
+            <input type="number" (keypress)="AddKeyPressCalculator($event,buscarPlato);" id="NumberLote"
+                name="NumberLote" placeholder="Ingresa N°" [(ngModel)]="numeroPlato"
+                class="display w-full text-center text-3xl p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 mb-6" />
+            <div class="buttons">
+                <button type="button" (click)="setNumbersSelectDashboard(1)">1</button>
+                <button type="button" (click)="setNumbersSelectDashboard(2)">2</button>
+                <button type="button" (click)="setNumbersSelectDashboard(3)">3</button>
+                <button type="button" (click)="setNumbersSelectDashboard(4)">4</button>
+                <button type="button" (click)="setNumbersSelectDashboard(5)">5</button>
+                <button type="button" (click)="setNumbersSelectDashboard(6)">6</button>
+                <button type="button" (click)="setNumbersSelectDashboard(7)">7</button>
+                <button type="button" (click)="setNumbersSelectDashboard(8)">8</button>
+                <button type="button" (click)="setNumbersSelectDashboard(9)">9</button>
+                <button type="button" (click)="setNumbersSelectDashboard('clear')"><i
+                        class="fa-regular fa-trash-can"></i></button>
+                <button type="button" (click)="setNumbersSelectDashboard(0)">0</button>
+                <button type="button" (click)="ListarPedidoNumeroCalculadora()">✓</button>
             </div>
         </div>
-
     </p-dialog>
 </div>
 <p-dialog [(visible)]="Cobrar_Dialog" [position]="'top'" header="Cobrar Pedido" [style]="{ width: '600px' }"

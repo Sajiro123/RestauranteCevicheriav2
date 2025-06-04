@@ -7,5 +7,6 @@ export interface NuevoPedidodetalle {
     total: number;
     lugarpedido: any;
     pedido_estado?: any;
+    idtopings: { idtopings: number; nombre: string }[];
     id_created_at?: any;
 }
