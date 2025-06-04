@@ -80,6 +80,8 @@ import { TieredMenuModule } from 'primeng/tieredmenu';
 import { TimelineModule } from 'primeng/timeline';
 import { ToastModule } from 'primeng/toast';
 import { ToggleButtonModule } from 'primeng/togglebutton';
+import { PopoverModule } from 'primeng/popover';
+
 import { ToolbarModule } from 'primeng/toolbar';
 import { TooltipModule } from 'primeng/tooltip';
 import { TreeModule } from 'primeng/tree';
@@ -128,6 +130,7 @@ import { TextareaModule } from 'primeng/textarea';
         SelectModule,
         DatePickerModule,
         ToggleButtonModule,
+        PopoverModule,
         ToggleSwitchModule,
         TreeSelectModule,
         MultiSelectModule,
@@ -222,6 +225,7 @@ import { TextareaModule } from 'primeng/textarea';
         TimelineModule,
         ToastModule,
         ToggleButtonModule,
+        PopoverModule,
         ToolbarModule,
         TooltipModule,
         TreeModule,
@@ -256,6 +260,7 @@ import { TextareaModule } from 'primeng/textarea';
         SelectModule,
         DatePickerModule,
         ToggleButtonModule,
+        PopoverModule,
         ToggleSwitchModule,
         TreeSelectModule,
         MultiSelectModule,
@@ -349,6 +354,7 @@ import { TextareaModule } from 'primeng/textarea';
         TimelineModule,
         ToastModule,
         ToggleButtonModule,
+        PopoverModule,
         ToolbarModule,
         TooltipModule,
         TreeModule,

@@ -98,6 +98,7 @@ export class PedidoService {
           c.nombre categoria,
           p.total totalidad ,
           p1.pedido_estado,
+          p1.toppings,
           p1.idpedidodetalle FROM pedido p
             INNER JOIN pedidodetalle p1 ON p.idpedido=p1.idpedido
             INNER JOIN producto p2 ON p1.idproducto=p2.idproducto
@@ -113,6 +114,11 @@ export class PedidoService {
         } else if (type) {
             query += ` and ${type} = '${value}'`;
         }
+        return this.http.post<any>(this.apiUrl, { query });
+    }
+
+    ListarToppings(): Observable<any> {
+        var query = `select * FROM toppings`;
         return this.http.post<any>(this.apiUrl, { query });
     }
 
@@ -140,6 +146,15 @@ export class PedidoService {
     }
 
     insertPedidoDetalle(arraypedido: NuevoPedidodetalle): Observable<any> {
+        debugger;
+        var toppings = '';
+        if (arraypedido.idtopings.length > 0) {
+            arraypedido.idtopings.forEach((element: any, index: number) => {
+                toppings += `${element.idtopings},`;
+            });
+            debugger;
+        }
+        toppings = toppings.slice(0, -1); // Eliminar la última coma
         const date = new Date();
         const fecha = date.toISOString().split('T')[0]; // "2025-02-20" (UTC)
         const insertQuery = `insert INTO pedidodetalle
@@ -150,6 +165,7 @@ export class PedidoService {
         ,total
         ,lugarpedido
         ,created_at
+        ,toppings
         ,id_created_at
         )
         VALUES (${arraypedido.idpedido},
@@ -159,7 +175,8 @@ export class PedidoService {
         ${arraypedido.total},
         ${arraypedido.lugarpedido},
         CURRENT_TIMESTAMP(),
-        ${arraypedido.id_created_at})`;
+        '${toppings}',
+        1)`;
 
         const selectQuery = `SELECT LAST_INSERT_ID() AS id;`;
 

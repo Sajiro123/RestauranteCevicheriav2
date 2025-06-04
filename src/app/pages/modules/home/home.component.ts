@@ -15,6 +15,10 @@ import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { Popover } from 'primeng/popover';
+import { MultiSelect } from 'primeng/multiselect';
+import { Product } from '../../service/product.service';
+import { Country } from '../../service/customer.service';
 @Component({
     selector: 'app-home',
     imports: [CommonModule, ImportsModule, FormsModule], // <-- Add this
@@ -26,11 +30,17 @@ import autoTable from 'jspdf-autotable';
 export class HomeComponent {
     products: Products[] = [];
     @ViewChild('motivoTextarea') motivoTextarea!: ElementRef;
-    @ViewChild('responsableTextarea') responsableTextarea!: ElementRef;
+    @ViewChild('multiselect', { static: true }) multiselect!: ElementRef;
 
+    selectedToppings: { idtopings: number; nombre: string }[] = []; // O puedes inicializar con algunos seleccionados
+    isDropdownOpen = false;
+
+    @ViewChild('responsableTextarea') responsableTextarea!: ElementRef;
+    multiselectToppings: any[] = [];
     discount: number = 0;
     switchValue: boolean = false;
     pedidosSeleccionados: any[] = [];
+    isPanelVisible = true;
 
     mesas: Mesa[] = [];
     Pedidos: Pedido[] = [];
@@ -76,7 +86,20 @@ export class HomeComponent {
         total: 0,
         descuento: 0,
         comentario: '',
-        pedidodetalle: [],
+        pedidodetalle: [
+            {
+                idpedido: 0,
+                idproducto: 0,
+                nombre: '',
+                cantidad: 1,
+                preciounitario: 0,
+                total: 0,
+                pedido_estado: undefined,
+                lugarpedido: '0',
+                idtopings: [],
+                id_created_at: undefined
+            }
+        ],
         visa: 0,
         yape: 0,
         plin: 0,
@@ -114,6 +137,7 @@ export class HomeComponent {
 
     ngOnInit(): void {
         this.cargarMesas();
+        this.ListarToppings();
     }
 
     setNumbersSelectDashboard(value: number | 'clear') {
@@ -180,7 +204,7 @@ export class HomeComponent {
                         response.data[0].cantidad = 1; // Inicializar cantidad en 1
                         response.data[0].total = response.data[0].preciounitario; // Inicializar cantidad en 1
                         response.data[0].lugarpedido = '0'; // Inicializar cantidad en 1
-
+                        response.data[0].idtopings = [{ idtopings: 0, nombre: '' }]; // Inicializar toppings
                         this.NuevoPedido.pedidodetalle.push(response.data[0]);
                     } else {
                         this.messageService.add({ severity: 'warn', summary: 'Error', detail: 'No contiene informaciòn la consulta BuscarPlatoSearch' });
@@ -195,9 +219,80 @@ export class HomeComponent {
             }
         );
     }
+    cargarToppingsSeleccionados(pedidosdetalle: NuevoPedidodetalle) {
+        const detalle = this.NuevoPedido.pedidodetalle.find((d) => d.idproducto === pedidosdetalle.idproducto);
 
+        if (detalle && Array.isArray(detalle.idtopings)) {
+            this.selectedToppings = (detalle.idtopings as { idtopings: number; nombre: string }[]).map((topping) => ({
+                idtopings: topping.idtopings,
+                nombre: topping.nombre
+            }));
+        } else {
+            this.selectedToppings = [];
+        }
+    }
+    agregarToppingsPedido(pedidosdetalle: NuevoPedidodetalle) {
+        if (this.selectedToppings.length > 0) {
+            // Buscar o crear el detalle del pedido
+            let detalleIndex = this.NuevoPedido.pedidodetalle.findIndex((d) => d.idproducto === pedidosdetalle.idproducto);
+
+            if (detalleIndex === -1) {
+                // Si no existe, crear nuevo detalle
+                const nuevoDetalle: NuevoPedidodetalle = {
+                    idpedido: pedidosdetalle.idpedido,
+                    idproducto: pedidosdetalle.idproducto,
+                    nombre: pedidosdetalle.nombre,
+                    cantidad: pedidosdetalle.cantidad,
+                    preciounitario: pedidosdetalle.preciounitario,
+                    total: pedidosdetalle.total,
+                    pedido_estado: pedidosdetalle.pedido_estado,
+                    lugarpedido: pedidosdetalle.lugarpedido,
+                    idtopings: [{ idtopings: 0, nombre: '' }],
+                    id_created_at: pedidosdetalle.id_created_at
+                };
+                this.NuevoPedido.pedidodetalle.push(nuevoDetalle);
+                detalleIndex = this.NuevoPedido.pedidodetalle.length - 1;
+            }
+
+            // Asegurar que idtopings existe y es array
+            if (!this.NuevoPedido.pedidodetalle[detalleIndex].idtopings) {
+                this.NuevoPedido.pedidodetalle[detalleIndex].idtopings = [];
+            }
+
+            // Asignar los toppings (reemplazar existentes)
+            this.NuevoPedido.pedidodetalle[detalleIndex].idtopings = [...this.selectedToppings];
+
+            this.selectedToppings = [];
+            this.isDropdownOpen = false;
+        } else {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Aviso',
+                detail: 'Seleccione al menos un topping'
+            });
+        }
+    }
+    ListarToppings() {
+        this.PedidoService.ListarToppings().subscribe(
+            (response) => {
+                if (response.success) {
+                    if (response.data) {
+                        this.multiselectToppings = response.data;
+                        this.cd.detectChanges(); // Forzar detección de cambios
+                    } else {
+                        this.messageService.add({ severity: 'warn', summary: 'Error', detail: 'No contiene informaciòn la consulta BuscarPlatoSearch' });
+                    }
+                } else {
+                    alert('Hubo un problema al conectar con el servidor');
+                }
+            },
+            (error) => {
+                console.error('Error al intentar consultar', error);
+                alert('Hubo un problema al conectar con el servidor');
+            }
+        );
+    }
     BuscarPlatoSearchText(buscarPlato: string) {
-        debugger;
         this.PedidoService.BuscarPlatoSearch(buscarPlato, 'nombre').subscribe((response) => {
             if (response.success) {
                 if (response.data) {
@@ -229,8 +324,6 @@ export class HomeComponent {
         });
     }
     agregarProducto(element: any, arg1: boolean) {
-        debugger;
-        this.displayModalCalculator = false;
         this.cd.detectChanges(); // Forzar detección de cambios
         this.NuevoPedido.pedidodetalle.push({
             nombre: element.acronimo || '',
@@ -240,7 +333,8 @@ export class HomeComponent {
             total: element.preciounitario || 0,
             pedido_estado: undefined,
             lugarpedido: '0',
-            idpedido: 0
+            idpedido: 0,
+            idtopings: [{ idtopings: 0, nombre: '' }]
         });
     }
     returntoMesas() {
@@ -431,6 +525,9 @@ export class HomeComponent {
         this.NuevoPedido = this.getPedidoClick(status_array);
     }
     getPedidoClick(status_array: any): NuevoPedido {
+        debugger;
+        var idtopingsArray: { idtopings: number; nombre: string }[] = [];
+
         if (status_array.length > 0) {
             this.NuevoPedido = {
                 idpedido: status_array[0]?.idpedido || 0,
@@ -461,8 +558,26 @@ export class HomeComponent {
                 total: pedido.total || 0,
                 estado: pedido.estado || false,
                 lugarpedido: pedido.lugarpedido || '',
-                comentario: pedido.comentario || ''
+                comentario: pedido.comentario || '',
+                idtopings: idtopingsArray || []
             }));
+
+            status_array.forEach((element: any) => {
+                var toppings = element.toppings;
+                if (toppings) {
+                    var topings_ = toppings.split(',');
+                    idtopingsArray = [];
+                    topings_.forEach((elementopping: any) => {
+                        const topping = this.multiselectToppings.find((t: any) => t.idtopings == elementopping);
+                        if (topping) idtopingsArray.push({ idtopings: topping.idtopings, nombre: topping.nombre });
+                        const lastDetalle = this.NuevoPedido.pedidodetalle.find((detalle) => detalle.idproducto == element.idproducto);
+                        // Asegurarse de que lastDetalle no sea undefined
+                        if (lastDetalle) {
+                            lastDetalle.idtopings = [...idtopingsArray];
+                        }
+                    });
+                }
+            });
 
             this.comentarios = status_array[0].comentario;
         } else {
@@ -527,6 +642,28 @@ export class HomeComponent {
     }
 
     seleccionarMesa(mesa: Mesa): void {
+        if (this.tipomodal === 'Editar') {
+            this.mesaSeleccionada = null;
+            this.NuevoPedido = {
+                idpedido: 0,
+                lugarpedido: undefined,
+                pedido_estado: undefined,
+                nombre: undefined,
+                cantidad: 0,
+                descripcion: '',
+                estado: false,
+                lugar: '',
+                preciounitario: 0,
+                total: 0,
+                descuento: 0,
+                comentario: '',
+                pedidodetalle: [],
+                visa: 0,
+                yape: 0,
+                plin: 0,
+                efectivo: 0
+            };
+        }
         this.tipomodal = 'Registrar';
         // this.LimpiarNuevoPedido();
         this.comentarios = '';
@@ -541,6 +678,9 @@ export class HomeComponent {
                 this.tipomodal = 'Registrar';
             }
         }
+        setTimeout(() => {
+            this.BuscarPlatoSearchText('');
+        }, 1500);
     }
     loadImageBase64(path: string): Promise<string> {
         return new Promise((resolve, reject) => {
@@ -832,20 +972,8 @@ export class HomeComponent {
                     }
                     return Number(a.categoria) - Number(b.categoria); // ↑
                 });
-                if (status_array.length > 0) {
-                    this.NuevoPedido.pedidodetalle = status_array.map((pedido) => ({
-                        idpedido: pedido.idpedido || 0,
-                        nombre: pedido.nombre || '',
-                        idproducto: pedido.idproducto || 0,
-                        preciounitario: pedido.precioU || 0,
-                        cantidad: pedido.cantidad || 0,
-                        descripcion: pedido.descripcion || '',
-                        total: pedido.total || 0,
-                        estado: pedido.estado || false,
-                        lugarpedido: pedido.lugarpedido || '',
-                        comentario: pedido.comentario || ''
-                    }));
-
+                var idtopingsArray: { idtopings: number; nombre: string }[] = [];
+                if (status_array.length != 0) {
                     this.NuevoPedido = {
                         idpedido: status_array[0]?.idpedido || 0,
                         lugarpedido: undefined,
@@ -866,8 +994,46 @@ export class HomeComponent {
                         efectivo: 0
                     };
 
-                    this.comentarios = status_array[0].comentario;
-                    return this.Pedidos.filter((p) => p.mesa === numMesa);
+                    this.NuevoPedido.pedidodetalle = status_array.map((pedido) => ({
+                        idpedido: pedido.idpedido || 0,
+                        nombre: pedido.nombre || '',
+                        idproducto: pedido.idproducto || 0,
+                        preciounitario: pedido.precioU || 0,
+                        cantidad: pedido.cantidad || 0,
+                        descripcion: pedido.descripcion || '',
+                        total: pedido.total || 0,
+                        estado: pedido.estado || false,
+                        lugarpedido: pedido.lugarpedido || '',
+                        comentario: pedido.comentario || '',
+                        idtopings: idtopingsArray || []
+                    }));
+
+                    status_array.forEach((element: any) => {
+                        var toppings = element.toppings;
+                        if (toppings) {
+                            var topings_ = toppings.split(',');
+                            idtopingsArray = [];
+                            topings_.forEach((elementopping: any) => {
+                                const topping = this.multiselectToppings.find((t: any) => t.idtopings == elementopping);
+                                if (topping) idtopingsArray.push({ idtopings: topping.idtopings, nombre: topping.nombre });
+                                const lastDetalle = this.NuevoPedido.pedidodetalle.find((detalle) => detalle.idproducto == element.idproducto);
+                                // Asegurarse de que lastDetalle no sea undefined
+                                if (lastDetalle) {
+                                    lastDetalle.idtopings = [...idtopingsArray];
+                                }
+                            });
+                        }
+                    });
+
+                    // ACA ME QEDOOOOOOOOOOOOOOO
+
+                    // Si idtopings es igual a "1", buscar el topping correspondiente en multiselectToppings
+                    // Buscar el topping en multiselectToppings
+
+                    if (status_array.length > 0) {
+                        this.comentarios = status_array[0].comentario;
+                        return this.Pedidos.filter((p) => p.mesa === numMesa);
+                    }
                 } else {
                     // alert(1);
                     // alert('No hay pedidos en esta mesa');
@@ -923,7 +1089,6 @@ export class HomeComponent {
 
     imprimirSeleccionados() {
         this.pedidosSeleccionados = this.Pedidos.filter((p) => p.seleccionado);
-        console.log('Pedidos seleccionados:', this.pedidosSeleccionados);
         this.estadopedido = 0;
         var inicial = 100;
         var items = this.pedidosSeleccionados.length;
@@ -1047,8 +1212,30 @@ export class HomeComponent {
         }
         return true;
     }
+
+    AddKeyPressCalculator(e: Event | undefined, buscarPlato: string) {
+        e = e || window.event;
+        const keyboardEvent = e as KeyboardEvent;
+        if (keyboardEvent.keyCode === 13) {
+            this.ListarPedidoNumeroCalculadora();
+        }
+        return true;
+    }
     toggleTodos(event: any) {
         const checked = event.target.checked;
         this.Pedidos.forEach((p) => (p.seleccionado = checked));
+    }
+    toggleDataTable(op: Popover, event: any, pedidosdetalle: NuevoPedidodetalle) {
+        console.log('toggleDataTable', this.NuevoPedido.pedidodetalle);
+        const index = this.NuevoPedido.pedidodetalle.findIndex((detalle) => detalle.idpedido === pedidosdetalle.idpedido);
+        // this.NuevoPedido.pedidodetalle[index].idtopings = [{ idtopings: 0, nombre: '' }]; // Inicializar con un objeto por defecto
+
+        this.isDropdownOpen = this.isDropdownOpen;
+        op.toggle(event);
+        this.cargarToppingsSeleccionados(pedidosdetalle);
+    }
+    onProductSelect(op: Popover, event: any) {
+        op.hide();
+        this.messageService.add({ severity: 'info', summary: 'Product Selected', detail: event?.data.name, life: 3000 });
     }
 }
