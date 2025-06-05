@@ -14,11 +14,7 @@ import { NuevoPedidodetalle } from '../../../model/NuevoPedidodetalle';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { Popover } from 'primeng/popover';
-import { MultiSelect } from 'primeng/multiselect';
-import { Product } from '../../service/product.service';
-import { Country } from '../../service/customer.service';
 @Component({
     selector: 'app-home',
     imports: [CommonModule, ImportsModule, FormsModule], // <-- Add this
@@ -231,11 +227,10 @@ export class HomeComponent {
             this.selectedToppings = [];
         }
     }
-    agregarToppingsPedido(pedidosdetalle: NuevoPedidodetalle) {
-        if (this.selectedToppings.length > 0) {
-            // Buscar o crear el detalle del pedido
-            let detalleIndex = this.NuevoPedido.pedidodetalle.findIndex((d) => d.idproducto === pedidosdetalle.idproducto);
+    agregarToppingsPedido(pedidosdetalle: NuevoPedidodetalle, op: Popover) {
+        var detalleIndex = this.NuevoPedido.pedidodetalle.findIndex((d) => d.idproducto === pedidosdetalle.idproducto);
 
+        if (this.selectedToppings.length > 0) {
             if (detalleIndex === -1) {
                 // Si no existe, crear nuevo detalle
                 const nuevoDetalle: NuevoPedidodetalle = {
@@ -265,12 +260,11 @@ export class HomeComponent {
             this.selectedToppings = [];
             this.isDropdownOpen = false;
         } else {
-            this.messageService.add({
-                severity: 'warn',
-                summary: 'Aviso',
-                detail: 'Seleccione al menos un topping'
-            });
+            if (typeof detalleIndex === 'number' && detalleIndex >= 0) {
+                this.NuevoPedido.pedidodetalle[detalleIndex].idtopings = [];
+            }
         }
+        op.hide();
     }
     ListarToppings() {
         this.PedidoService.ListarToppings().subscribe(
@@ -525,7 +519,6 @@ export class HomeComponent {
         this.NuevoPedido = this.getPedidoClick(status_array);
     }
     getPedidoClick(status_array: any): NuevoPedido {
-        debugger;
         var idtopingsArray: { idtopings: number; nombre: string }[] = [];
 
         if (status_array.length > 0) {
@@ -857,6 +850,19 @@ export class HomeComponent {
                 }
             }
 
+            response.data.forEach((element: any) => {
+                var toppings = element.toppings;
+                if (toppings && toppings != 0) {
+                    var topings_ = toppings.split(',');
+                    var texto_topping = '';
+                    topings_.forEach((elementopping: any) => {
+                        const topping = this.multiselectToppings.find((t: any) => t.idtopings == elementopping);
+                        if (topping) texto_topping += topping.nombre + ', ';
+                    });
+                    inicial += 4;
+                }
+            });
+
             const doc = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
@@ -887,6 +893,13 @@ export class HomeComponent {
                 }
                 if (element.lugarpedido == 0) data.push([element.cantidad, element.nombre, element.precioU * element.cantidad]);
             });
+            doc.setFont('helvetica', 'bold');
+
+            doc.text('PEDIDOS PARA MESA', centerX, y, { align: 'center' });
+            y += 5;
+            doc.text('=============================', centerX, y, { align: 'center' });
+            y += 5;
+            doc.setFont('helvetica', 'normal');
 
             data.forEach((element: any) => {
                 const col1X = 5; // Posición X para la cantidad
@@ -896,14 +909,13 @@ export class HomeComponent {
                 doc.text(element[0].toString(), col1X, y);
                 doc.text(element[1], col2X, y);
                 doc.text('S/' + element[2].toString(), col3X, y);
-                y += 5;
+                y += 4.5;
             });
 
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(12);
-            y += 3;
+            y += 5;
             if (this.estadopedido == 1) {
-                y += 5;
                 doc.text('PEDIDOS PARA LLEVAR', centerX, y, { align: 'center' });
                 y += 5;
                 doc.text('=============================', centerX, y, { align: 'center' });
@@ -926,12 +938,12 @@ export class HomeComponent {
 
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
-            y += 7;
+            y += 4;
 
             doc.text('Comentario :', centerX, y, { align: 'center' });
-            y += 7;
+            y += 4;
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(10);
+            doc.setFontSize(8);
 
             const maxWidth = 73; // Ancho máximo en unidades del PDF (ajústalo según tu diseño)
             const comentario = response.data[0].comentario || ''; // Texto del comentario (o string vacío si es null/undefined)
@@ -946,6 +958,33 @@ export class HomeComponent {
                 currentY += 4; // Espacio entre líneas (ajusta según necesidad)
             });
             y += 5;
+            doc.setFontSize(8);
+            response.data.forEach((element: any) => {
+                var toppings = element.toppings;
+
+                if (toppings && toppings != 0) {
+                    var topings_ = toppings.split(',');
+                    var texto_topping = '';
+                    topings_.forEach((elementopping: any) => {
+                        const topping = this.multiselectToppings.find((t: any) => t.idtopings == elementopping);
+                        if (topping) texto_topping += topping.nombre + ', ';
+
+                        // idtopings: topping.idtopings, nombre: topping.nombre  ;
+                        // const lastDetalle = this.NuevoPedido.pedidodetalle.find((detalle) => detalle.idproducto == element.idproducto);
+                        // // Asegurarse de que lastDetalle no sea undefined
+                        // if (lastDetalle) {
+                        //     lastDetalle.idtopings = [...idtopingsArray];
+                        // }
+                    });
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(element.nombre, centerX, y, { align: 'center' });
+
+                    const fontSize = doc.getFontSize(); // Obtiene el tamaño de fuente actual
+                    y += fontSize * 0.4; // Ajuste fino (0.2 es un factor para reducir espacio)
+                    doc.text(texto_topping, centerX, y, { align: 'center' });
+                    y += 6;
+                }
+            });
 
             // Cuando la imagen se cargue, agregarla al PDF
             const pdfBlob = doc.output('blob');
