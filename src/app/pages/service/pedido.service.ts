@@ -27,7 +27,7 @@ export class PedidoService {
     }
 
     ShowProductosPdf(id: any): Observable<any> {
-        const query = `select p1.lugarpedido, p.descuento,p.comentario, p2.acronimo,p1.idproducto,p2.idcategoria, p.idpedido, p1.cantidad,p2.nombre,p1.cantidad,p1.precioU,p1.total,p.mesa,c.nombre categoria,p.total totalidad FROM pedido p
+        const query = `select p1.toppings, p1.lugarpedido, p.descuento,p.comentario, p2.acronimo,p1.idproducto,p2.idcategoria, p.idpedido, p1.cantidad,p2.nombre,p1.cantidad,p1.precioU,p1.total,p.mesa,c.nombre categoria,p.total totalidad FROM pedido p
             INNER JOIN pedidodetalle p1 ON p.idpedido=p1.idpedido
             INNER JOIN producto p2 ON p1.idproducto=p2.idproducto
             INNER JOIN categoria c ON c.idcategoria=p2.idcategoria
@@ -146,13 +146,11 @@ export class PedidoService {
     }
 
     insertPedidoDetalle(arraypedido: NuevoPedidodetalle): Observable<any> {
-        debugger;
         var toppings = '';
         if (arraypedido.idtopings.length > 0) {
             arraypedido.idtopings.forEach((element: any, index: number) => {
                 toppings += `${element.idtopings},`;
             });
-            debugger;
         }
         toppings = toppings.slice(0, -1); // Eliminar la última coma
         const date = new Date();

@@ -27,9 +27,10 @@ export class AppMenu {
             {
                 label: 'Modulos',
                 items: [
-                    { label: 'Home', icon: 'pi pi-fw pi-id-card', routerLink: ['/uikit/home'] },
-
-                    { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', routerLink: ['/uikit/formlayout'] },
+                    { label: 'Mesas', icon: 'pi pi-fw pi-id-card', routerLink: ['/uikit/home'] },
+                    { label: 'Configuraciones', icon: 'pi pi-fw pi-cog', routerLink: ['/uikit/configuracion'] },
+                    { label: 'Reportes', icon: 'pi pi-fw pi-chart-line', routerLink: ['/uikit/reporte'] },
+                    { label: 'Apertura', icon: 'pi pi-fw pi-clock', routerLink: ['/uikit/apertura'] }
                     // { label: 'Input', icon: 'pi pi-fw pi-check-square', routerLink: ['/uikit/input'] },
                     // { label: 'Button', icon: 'pi pi-fw pi-mobile', class: 'rotated-icon', routerLink: ['/uikit/button'] },
                     // { label: 'Table', icon: 'pi pi-fw pi-table', routerLink: ['/uikit/table'] },
@@ -45,7 +46,7 @@ export class AppMenu {
                     // { label: 'Timeline', icon: 'pi pi-fw pi-calendar', routerLink: ['/uikit/timeline'] },
                     // { label: 'Misc', icon: 'pi pi-fw pi-circle', routerLink: ['/uikit/misc'] }
                 ]
-            },
+            }
             // {
             //     label: 'Pages',
             //     icon: 'pi pi-fw pi-briefcase',

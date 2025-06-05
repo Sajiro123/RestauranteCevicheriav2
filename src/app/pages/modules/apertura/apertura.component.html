@@ -1,0 +1,71 @@
+<div class="card">
+    <div class="container" [formGroup]="cajaForm">
+        <div class="left">
+            <img src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png" alt="Cerrado" />
+            <div class="cerrado" *ngIf="data_apertura.length == 0">CERRADO</div>
+            <div class="cerrado" *ngIf="data_apertura.length > 0">ABIERTO</div>
+            <br />
+
+            <span style="font-weight: bold;">({{ fecha_actual }})</span>
+
+            <p *ngIf="data_apertura.length == 0">
+                Ingrese los datos,<br />
+                para abrir una caja
+            </p>
+        </div>
+
+        <div class="right">
+            <div class="form-group">
+                <label for="caja">Caja</label>
+                <select formControlName="caja" id="caja">
+                    <option value="">Seleccionar</option>
+                    <option value="Caja 1">Caja 1</option>
+                </select>
+                <div *ngIf="cajaForm.get('caja')?.touched && cajaForm.get('caja')?.invalid" class="error">
+                    <small *ngIf="cajaForm.get('caja')?.errors?.['required']">La caja es obligatoria</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="turno">Turno</label>
+                <select formControlName="turno" id="turno">
+                    <option value="">Seleccionar</option>
+                    <option value="Mañana">Mañana</option>
+                    <option value="Noche">Noche</option>
+                </select>
+                <div *ngIf="cajaForm.get('turno')?.touched && cajaForm.get('turno')?.invalid" class="error">
+                    <small *ngIf="cajaForm.get('turno')?.errors?.['required']">El turno es obligatorio</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="responsable">Responsable</label>
+                <select formControlName="responsable" id="responsable">
+                    <option value="">Seleccionar</option>
+                    <option value="Sully">Sully</option>
+                    <option value="Yordy">Yordy</option>
+                    <option value="Alex">Alex</option>
+                </select>
+                <div *ngIf="cajaForm.get('responsable')?.touched && cajaForm.get('responsable')?.invalid" class="error">
+                    <small *ngIf="cajaForm.get('responsable')?.errors?.['required']">El responsable es
+                        obligatorio</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Ingrese monto de apertura</label>
+                <div class="money-input">
+                    <span>S/</span>
+                    <input formControlName="monto" type="number" placeholder="0.00" />
+                    <span>Soles</span>
+                </div>
+                <div *ngIf="cajaForm.get('monto')?.touched && cajaForm.get('monto')?.invalid" class="error">
+                    <small *ngIf="cajaForm.get('monto')?.errors?.['required']">El monto es obligatorio</small>
+                    <small *ngIf="cajaForm.get('monto')?.errors?.['min']">El monto debe ser mayor o igual a 0</small>
+                </div>
+            </div>
+
+            <button class="btn" type="submit" (click)="GuardarCaja()">ABRIR CAJA</button>
+        </div>
+    </div>
+</div>
