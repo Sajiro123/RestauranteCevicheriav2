@@ -16,7 +16,7 @@ export class PedidoService {
 
     CobrarPedido(productos: Pedido) {
         const query = `UPDATE pedido
-                      SET estado = 2,
+                      SET estado = 3,
                           yape = '${productos.yape}',
                           visa = '${productos.visa}',
                           efectivo = '${productos.efectivo}',
