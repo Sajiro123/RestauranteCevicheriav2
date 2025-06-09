@@ -19,7 +19,6 @@ import { Popover } from 'primeng/popover';
     selector: 'app-home',
     imports: [CommonModule, ImportsModule, FormsModule], // <-- Add this
     providers: [MessageService, ConfirmationService],
-
     templateUrl: './home.component.html',
     styleUrl: './home.component.scss'
 })
@@ -1078,7 +1077,7 @@ export class HomeComponent {
                     // alert('No hay pedidos en esta mesa');
                 }
             } else if (this.mesaSeleccionada) {
-                return this.Pedidos.filter((p) => p.mesa === numMesa);
+                [];
             }
         }
         return [];
