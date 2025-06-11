@@ -1,5 +1,5 @@
 const express = require('express');
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise'); // Asegúrate de usar la versión con promesas
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
@@ -11,77 +11,58 @@ const port = 3000;
 app.use(bodyParser.json());
 app.use(cors());
 
-// Configuración de la conexión a MySQL
-const db = mysql.createConnection({
-  // host: '10.10.18.15',
-  // user: 'aespinoza',
-  // password: '@lex@3zP1n0Z4__-2O22',
-  // database: 'centromedico_osi_20231115'
+// Configuración del pool de conexiones (declarado como constante)
+const pool = mysql.createPool({
   host: '127.0.0.1',
   user: 'alex',
   password: '1234',
-  database: 'bd_pruebas_'
-
+  database: 'bd_pruebas_',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-db.connect((err) => {
-  if (err) {
+// Función para probar la conexión
+async function testConnection() {
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    console.log('Conexión exitosa a MySQL');
+
+    // Opcional: ejecutar una consulta simple para verificar
+    await connection.query('SELECT 1');
+  } catch (err) {
     console.error('Error conectando a MySQL:', err);
-    return;
+  } finally {
+    if (connection) connection.release();
   }
-  console.log('Conexión exitosa a MySQL');
-});
+}
 
-// Servir los archivos de Angular en la carpeta "dist"
-app.use(express.static(path.join(__dirname, 'dist', 'restaurante-cevicheria')));
+// Llamar a la función de prueba
+testConnection();
 
-// Endpoint de login
-app.post('/post', (req, res) => {
+// Endpoint para consultas
+app.post('/post', async (req, res) => {
+  let connection;
+  try {
+    const { query } = req.body;
 
-  const { query } = req.body;
-
-  db.query(query, '', (err, results) => {
-    if (err) {
-      console.error('Error en la consulta:', err);
-      res.status(500).json({ message: 'Error en el servidor' });
-      return;
-    }
+    // Obtener una conexión del pool
+    connection = await pool.getConnection();
+    const [results] = await connection.query(query);
 
     if (results.length > 0) {
-      const userData = results;
-      return  res.json({ success: true, message: 'Success', data: userData });
-    } if (results.length == 0) {
-      return  res.json({ success: true, message: 'Success' });
+      return res.json({ success: true, message: 'Success', data: results });
+    } else {
+      return res.json({ success: true, message: 'Success' });
     }
-    else {
-      // debugger
-      console.error('Credenciales incorrectas:', results);
-      // return  res.json({ success: false, message: 'Credenciales incorrectas' });
-      return  res.json({ success: true, message: 'Success' });
-
-    }
-  });
-});
-
-// Manejar rutas de Angular
-// app.get('*', (req, res) => {
-//   res.sendFile(path.join(__dirname, 'dist', 'restaurante-cevicheria', 'index.html'));
-// });
-
-// Endpoint for inserting data using GET (not recommended)
-app.get('/insert', (req, res) => {
-  const { query } = req.body;
-
-  // Execute the query
-  db.query(query, '', (err, results) => {
-    if (err) {
-      console.error('Error in the query:', err);
-      return res.status(500).json({ message: 'Server error' });
-    }
-
-    // If the insert was successful
-    res.json({ success: true, message: 'User inserted successfully', data: results });
-  });
+  } catch (err) {
+    console.error('Error en la consulta:', err);
+    return res.status(500).json({ message: 'Error en el servidor' });
+  } finally {
+    // Liberar la conexión siempre
+    if (connection) connection.release();
+  }
 });
 
 // Iniciar el servidor

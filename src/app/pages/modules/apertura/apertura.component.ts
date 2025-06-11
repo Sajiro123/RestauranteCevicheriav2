@@ -19,7 +19,8 @@ export class AperturaComponent {
     texto_estado_caja: any = '';
     estado_caja = 0;
     GastosForm: FormGroup;
-    CategoriaGastosList: any;
+    CategoriaGastosList: { descripcion: string; idcategoriagastos: number }[] = [];
+    GastosList: any;
     fechaActual: string = new Date().toISOString().split('T')[0];
 
     constructor(
@@ -28,7 +29,6 @@ export class AperturaComponent {
         private messageService: MessageService,
         private confirmationService: ConfirmationService
     ) {
-        debugger;
         this.cajaForm = this.fb.group({
             estado: [1],
             caja: ['', Validators.required],
@@ -37,8 +37,9 @@ export class AperturaComponent {
             monto: ['', [Validators.required, Validators.min(0)]]
         });
 
-        debugger;
-        let hoy = new Date().toISOString().split('T')[0];
+        let dateHoy = new Date();
+        dateHoy.setDate(dateHoy.getDate());
+        let hoy = dateHoy.toISOString().split('T')[0];
 
         this.GastosForm = this.fb.group({
             descripcion: ['', Validators.required],
@@ -57,7 +58,6 @@ export class AperturaComponent {
             month: 'long',
             year: 'numeric'
         };
-
         // Convertir la fecha a texto en español
         const fechaFormateada = date.toLocaleDateString('es-ES', opciones);
 
@@ -65,7 +65,9 @@ export class AperturaComponent {
         this.fecha_actual = fechaFormateada.replace(' de ', ' de ').replace(' de ', ' del ');
         this.ListAperturaNow();
         this.ListCategoriasGastos();
+        this.ListGastos();
     }
+
     GuardarCaja(data: any) {
         if (data == 0) {
             if (this.cajaForm.invalid) {
@@ -112,10 +114,32 @@ export class AperturaComponent {
                     detail: 'Gasto registrado',
                     life: 3000
                 });
+                this.ListGastos();
+                this.GastosForm.reset();
                 // this.ListAperturaNow();
             });
         }
     }
+
+    totalGastos() {
+        return this.GastosList.reduce((total: number, gasto: any) => total + (gasto.monto || 0), 0);
+    }
+    resumenGastosPorCategoria(): string {
+        if (!this.GastosList) return '';
+        const resumen: { [key: string]: number } = {};
+        this.GastosList.forEach((gasto: any) => {
+            if (!resumen[gasto.idcategoriagatos]) {
+                resumen[gasto.idcategoriagatos] = 0;
+            }
+            resumen[gasto.idcategoriagatos] += gasto.monto || 0;
+        });
+        debugger;
+        // Para mostrar saltos de línea en HTML, usa <br> y luego en el template usa [innerHTML]
+        return Object.entries(resumen)
+            .map(([idcategoriagatos, total]) => `${this.getCategoriaDescripcion(Number(idcategoriagatos))}: ${total}`)
+            .join('     ||    ');
+    }
+
     ListAperturaNow() {
         this.AperturaService_.ListarAperturaHoy().subscribe((response) => {
             if (response.success) {
@@ -144,7 +168,6 @@ export class AperturaComponent {
                         estado: response.data[0]?.estado
                     });
                 } else {
-                    debugger;
                     this.texto_estado_caja = 'Abrir Caja Cerrada';
                     this.estado_caja = 0;
                     this.cajaForm.enable();
@@ -154,13 +177,31 @@ export class AperturaComponent {
             }
         });
     }
+
     ListCategoriasGastos() {
         this.AperturaService_.ListCategoriasGastos().subscribe((response) => {
             if (response.success) {
                 if (response.data) {
-                    debugger;
                     this.CategoriaGastosList = response.data;
-                } else {
+                }
+            } else {
+                alert('Hubo un problema al conectar con el servidor');
+            }
+        });
+    }
+
+    getCategoriaDescripcion(idcategoria: number) {
+        const categoria = this.CategoriaGastosList.find((d: { idcategoriagastos: any }) => d.idcategoriagastos === idcategoria);
+        var estus = categoria ? categoria.descripcion : '';
+
+        return estus;
+    }
+
+    ListGastos() {
+        this.AperturaService_.ListGastos().subscribe((response) => {
+            if (response.success) {
+                if (response.data) {
+                    this.GastosList = response.data;
                 }
             } else {
                 alert('Hubo un problema al conectar con el servidor');
