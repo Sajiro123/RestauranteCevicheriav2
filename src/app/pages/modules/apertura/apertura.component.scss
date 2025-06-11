@@ -19,6 +19,8 @@
      margin: auto;
  }
 
+
+
  .left {
      flex: 1;
      background-color: #f9fbf9;
@@ -102,15 +104,7 @@
      box-sizing: border-box;
  }
 
- /* Container card */
- .card {
-     background: var(--color-bg);
-     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-     border-radius: var(--border-radius);
-     max-width: var(--max-width);
-     width: 100%;
-     padding: 2rem 2.5rem;
- }
+
 
  /* Heading */
  h1 {
@@ -180,4 +174,151 @@
 
  .gastos label {
      margin-top: 12px;
+ }
+
+ body {
+     font-family: Arial, sans-serif;
+     max-width: 1000px;
+     margin: 0 auto;
+     padding: 20px;
+     display: flex;
+     gap: 30px;
+ }
+
+ .form-section {
+     flex: 1;
+     border: 1px solid #e0e0e0;
+     padding: 20px;
+     border-radius: 8px;
+     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+ }
+
+ .expenses-section {
+     flex: 1;
+     border: 1px solid #e0e0e0;
+     border-radius: 8px;
+     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+ }
+
+ h1 {
+     color: #333;
+     font-size: 24px;
+     margin-top: 0;
+ }
+
+ h2 {
+     color: #555;
+     font-size: 18px;
+     margin-bottom: 20px;
+ }
+
+ .form-group {
+     margin-bottom: 15px;
+ }
+
+ label {
+     font-weight: bold;
+     display: block;
+     margin-bottom: 5px;
+ }
+
+ input,
+ select,
+ textarea {
+     width: 100%;
+     padding: 8px;
+     border: 1px solid #ddd;
+     border-radius: 4px;
+     box-sizing: border-box;
+ }
+
+ textarea {
+     height: 80px;
+     resize: vertical;
+ }
+
+ button {
+     background-color: #4CAF50;
+     color: white;
+     border: none;
+     padding: 10px 15px;
+     border-radius: 4px;
+     cursor: pointer;
+     font-size: 16px;
+ }
+
+ button:hover {
+     background-color: #45a049;
+ }
+
+ hr {
+     border: 0;
+     height: 1px;
+     background-color: #eee;
+     margin: 20px 0;
+ }
+
+ .expense-item {
+     border-bottom: 1px solid #eee;
+     padding: 15px 0;
+     margin-left: 21px;
+ }
+
+ .expense-item:last-child {
+     border-bottom: none;
+ }
+
+ .expense-desc {
+     font-weight: bold;
+     margin-bottom: 5px;
+ }
+
+ .expense-details {
+     display: flex;
+     justify-content: space-between;
+     color: #666;
+     font-size: 14px;
+     margin-bottom: 5px;
+ }
+
+ .expense-notes {
+     color: #888;
+     font-style: italic;
+     font-size: 13px;
+ }
+
+ .delete-btn {
+     background-color: #f44336;
+     color: white;
+     border: none;
+     padding: 5px 10px;
+     border-radius: 3px;
+     cursor: pointer;
+     font-size: 12px;
+     margin-top: 8px;
+ }
+
+ .delete-btn:hover {
+     background-color: #d32f2f;
+ }
+
+ .w-full {
+     background-color:#f9f8f8;
+     border-radius: 8px;
+     padding: 20px;
+     margin-bottom: 25px;
+     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+     position: relative;
+ }
+
+ .w-full::after {
+     content: "";
+     display: block;
+     height: 2px;
+     background: linear-gradient(to right, transparent, #ddd, transparent);
+     margin-top: 25px;
+ }
+
+ .w-full:last-child::after {
+     display: none;
  }

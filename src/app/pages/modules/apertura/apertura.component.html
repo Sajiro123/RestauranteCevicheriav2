@@ -1,7 +1,7 @@
 <p-toast styleClass="text-2xl" />
 
 <div class="card">
-    <div class="grid grid-cols-1 sm:grid-cols-2 container">
+    <div class="grid grid-cols-1 sm:grid-cols-4">
         <div class="w-full" [formGroup]="cajaForm">
             <div class="left">
                 <h1> CAJA</h1>
@@ -83,7 +83,7 @@
         </div>
         <div class="w-full gastos" [formGroup]="GastosForm">
             <main class="card main" role="main" aria-label="Formulario de ingreso de gastos de comida">
-                <h1> Gastos</h1>
+                <h1>Registrar Gastos</h1>
                 <p class="subtitle">Ingrese los detalles del gasto para el sistema de comida.</p>
                 <div>
                     <label for="expenseName">Descripción del gasto</label>
@@ -120,6 +120,36 @@
                     [disabled]="GastosForm.invalid || GastosForm.pristine" class="btn" (click)="GuardarGastos()">
                     Registrar Gasto
                 </button>
+            </main>
+        </div>
+
+        <div class="w-full gastos" [formGroup]="GastosForm" style="width: 115%;">
+            <main class="card main" role="main" aria-label="Formulario de ingreso de gastos de comida">
+                <h1>Mis Gastos</h1>
+                <div style="overflow: scroll;height: 600px;">
+                    <div class="expenses-section" *ngFor="let gasto of GastosList">
+                        <div class="expense-item">
+                            <div class="expense-desc">{{ gasto.descripcion | uppercase }}</div>
+                            <div class="expense-details">
+                                <span style="color: red;">S/ {{ gasto.monto | number:'1.2-2' }}</span>
+                                <span>{{ gasto.fecha | date:'dd/MM/yyyy' }}</span>
+                                <span>
+                                    {{ getCategoriaDescripcion(gasto.idcategoriagatos) }}
+                                </span>
+                            </div>
+                            <div class="expense-notes">{{ gasto.notas }}</div>
+                            <!-- <button class="delete-btn" (click)="eliminarGasto(gasto)">Eliminar</button> -->
+                        </div>
+                    </div>
+                </div>
+                <div class="expenses-total" style="margin-top: 20px; font-weight: bold;" *ngIf="GastosList.length > 0 ">
+                    Total de categoria: <br><br>
+                    {{ resumenGastosPorCategoria()}}
+                </div>
+                <div class="expenses-total" style="margin-top: 20px; font-weight: bold;" *ngIf="GastosList.length > 0 ">
+                    Total de gastos: S/
+                    {{ totalGastos() | number:'1.2-2' }}
+                </div>
             </main>
         </div>
     </div>

@@ -16,6 +16,11 @@ export class AperturaService {
         return this.http.post<any>(this.apiUrl, { query });
     }
 
+    ListGastos() {
+        const query = `SELECT * FROM gastos g WHERE g.fecha=CURDATE() AND deleted IS NULL;`;
+        return this.http.post<any>(this.apiUrl, { query });
+    }
+
     registrarCaja(value: any) {
         var date = new Date();
         var fecha = date.toISOString().split('T')[0]; // "2025-02-20" (UTC)
