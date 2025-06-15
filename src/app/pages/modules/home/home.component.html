@@ -368,14 +368,16 @@
             </thead>
 
             <tbody>
-                <tr *ngFor="let pedido of getPedidosDeMesa(mesaSeleccionada?.numero,pedido_mesa_status)">
-                    <td class="">
-                        <input type="checkbox" class="w-6 h-6" [(ngModel)]="pedido.seleccionado" />
-                    </td>
-                    <td>{{ pedido.cantidad }}</td>
-                    <td>{{ pedido.nombre }}</td>
-                    <td>{{ pedido.precioU }}</td>
-                </tr>
+                <ng-container *ngIf="Pedidos?.length != 0">
+                    <tr *ngFor="let pedido of getPedidosDeMesa(mesaSeleccionada?.numero,pedido_mesa_status)">
+                        <td class="">
+                            <input type="checkbox" class="w-6 h-6" [(ngModel)]="pedido.seleccionado" />
+                        </td>
+                        <td>{{ pedido.cantidad }}</td>
+                        <td>{{ pedido.nombre }}</td>
+                        <td>{{ pedido.precioU }}</td>
+                    </tr>
+                </ng-container>
             </tbody>
         </table>
 
