@@ -33,7 +33,7 @@ export class AperturaService {
         ,responsable
         )
         VALUES (
-        '${fecha}'
+        CURDATE()
         ,'${value.monto}',
         1,
         CURRENT_TIMESTAMP(),
@@ -57,7 +57,7 @@ export class AperturaService {
         VALUES ('${value.descripcion}',
         '${value.categoria}',
         '${value.monto}',
-        '${value.fecha}',
+        CURDATE(),
         '${value.notas}',
         CURRENT_TIMESTAMP(),
         1)`;

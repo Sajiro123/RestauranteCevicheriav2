@@ -195,6 +195,7 @@
 
  .expenses-section {
      flex: 1;
+     height: 64px;
      border: 1px solid #e0e0e0;
      border-radius: 8px;
      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -303,7 +304,7 @@
  }
 
  .w-full {
-     background-color:#f9f8f8;
+     background-color: #f9f8f8;
      border-radius: 8px;
      padding: 20px;
      margin-bottom: 25px;
@@ -321,4 +322,38 @@
 
  .w-full:last-child::after {
      display: none;
+ }
+
+ .card-header {
+     font-weight: 700;
+     font-size: 1.3rem;
+     margin-bottom: 12px;
+ }
+
+ @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+ body {
+     background-color: #f9fafb;
+     font-family: 'Inter', sans-serif;
+     color: #1f2937;
+     margin: 20px;
+     display: flex;
+     justify-content: center;
+     padding: 10px;
+ }
+
+ .cajaresumen .card-header {
+     font-weight: 700;
+     font-size: 1.4rem;
+     margin-bottom: 24px;
+     border-bottom: 2px solid #3b82f6;
+     /* Blue 500 */
+     padding-bottom: 8px;
+     color: #2563eb;
+     /* Blue 600 */
+ }
+
+ .card-details strong {
+     color: #1e40af;
+     /* Blue 800 */
  }

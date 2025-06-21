@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { HomeService } from '../../service/home.service';
 import { CommonModule } from '@angular/common';
 import { Mesa } from '../../../model/Mesa';
@@ -26,6 +26,7 @@ export class HomeComponent {
     products: Products[] = [];
     @ViewChild('motivoTextarea') motivoTextarea!: ElementRef;
     @ViewChild('multiselect', { static: true }) multiselect!: ElementRef;
+    @Input() isLoading: boolean = false; // Para activar/desactivar el loader
 
     selectedToppings: { idtopings: number; nombre: string }[] = []; // O puedes inicializar con algunos seleccionados
     isDropdownOpen = false;
@@ -92,7 +93,8 @@ export class HomeComponent {
                 pedido_estado: undefined,
                 lugarpedido: '0',
                 idtopings: [],
-                id_created_at: undefined
+                id_created_at: undefined,
+                idpedidodetalle: 0
             }
         ],
         visa: 0,
@@ -131,6 +133,7 @@ export class HomeComponent {
     ) {}
 
     ngOnInit(): void {
+        // LoaderComponent.isLoading = true; // Set loading state to true
         this.cargarMesas();
         this.ListarToppings();
     }
@@ -181,6 +184,29 @@ export class HomeComponent {
     }
 
     CobrarDialog(mesa: Mesa): void {
+        this.Pedido_cobrar = {
+            idpedido: 0,
+            delivery: 0,
+            yape: 0,
+            efectivo: 0,
+            visa: 0,
+            plin: 0,
+            idproducto: 0,
+            lugarpedido: undefined,
+            pedido_estado: undefined,
+            nombre: undefined,
+            categoria: '',
+            cantidad: 0,
+            descripcion: '',
+            estado: false,
+            lugar: '',
+            precioU: 0,
+            total: 0,
+            total_pedidos: 0,
+            mesa: '',
+            descuento: 0,
+            comentario: ''
+        };
         this.Cobrar_Dialog = true;
         this.mesaSeleccionada = mesa;
         var status_array = this.Pedidos.filter((p) => p.mesa === mesa.numero);
@@ -215,7 +241,7 @@ export class HomeComponent {
         );
     }
     cargarToppingsSeleccionados(pedidosdetalle: NuevoPedidodetalle) {
-        const detalle = this.NuevoPedido.pedidodetalle.find((d) => d.idproducto === pedidosdetalle.idproducto);
+        const detalle = this.NuevoPedido.pedidodetalle.find((d) => d.idpedidodetalle === pedidosdetalle.idpedidodetalle);
 
         if (detalle && Array.isArray(detalle.idtopings)) {
             this.selectedToppings = (detalle.idtopings as { idtopings: number; nombre: string }[]).map((topping) => ({
@@ -226,8 +252,12 @@ export class HomeComponent {
             this.selectedToppings = [];
         }
     }
-    agregarToppingsPedido(pedidosdetalle: NuevoPedidodetalle, op: Popover) {
-        var detalleIndex = this.NuevoPedido.pedidodetalle.findIndex((d) => d.idproducto === pedidosdetalle.idproducto);
+    agregarToppingsPedido(pedidosdetalle: NuevoPedidodetalle, op: Popover, index: number) {
+        if (pedidosdetalle.idpedidodetalle != 0) {
+            var detalleIndex = this.NuevoPedido.pedidodetalle.findIndex((d) => d.idpedidodetalle === pedidosdetalle.idpedidodetalle);
+        } else {
+            var detalleIndex = this.NuevoPedido.pedidodetalle[index] ? index : -1; // Buscar el índice del detalle en el array
+        }
 
         if (this.selectedToppings.length > 0) {
             if (detalleIndex === -1) {
@@ -364,6 +394,7 @@ export class HomeComponent {
             (await this.PedidoService.EditarPedido(this.NuevoPedido, this.comentarios))
                 .pipe(
                     switchMap((pedidoResponse: any) => {
+                        debugger;
                         // Creamos un array de observables para los detalles
                         const detallesObservables = this.NuevoPedido.pedidodetalle.map((element) => {
                             element.idpedido = this.NuevoPedido.idpedido;
@@ -462,6 +493,7 @@ export class HomeComponent {
     }
 
     RegistrarPedido() {
+        this.isLoading = true; // Activar el loader
         if (this.mesaSeleccionada) {
             this.PedidoService.insertPedido(this.NuevoPedido, this.mesaSeleccionada.numero, this.comentarios)
                 .pipe(
@@ -483,6 +515,7 @@ export class HomeComponent {
                         await this.cargarMesas();
 
                         setTimeout(() => {
+                            this.isLoading = false;
                             if (this.mesaSeleccionada) {
                                 this.seleccionarMesa(this.mesaSeleccionada);
                             }
@@ -540,19 +573,22 @@ export class HomeComponent {
                 plin: 0,
                 efectivo: 0
             };
-            this.NuevoPedido.pedidodetalle = status_array.map((pedido: { idpedido: any; nombre: any; idproducto: any; precioU: any; cantidad: any; descripcion: any; total: any; estado: any; lugarpedido: any; comentario: any }) => ({
-                idpedido: pedido.idpedido || 0,
-                nombre: pedido.nombre || '',
-                idproducto: pedido.idproducto || 0,
-                preciounitario: pedido.precioU || 0,
-                cantidad: pedido.cantidad || 0,
-                descripcion: pedido.descripcion || '',
-                total: pedido.total || 0,
-                estado: pedido.estado || false,
-                lugarpedido: pedido.lugarpedido || '',
-                comentario: pedido.comentario || '',
-                idtopings: idtopingsArray || []
-            }));
+            this.NuevoPedido.pedidodetalle = status_array.map(
+                (pedido: { idpedidodetalle: number; idpedido: any; nombre: any; idproducto: any; precioU: any; cantidad: any; descripcion: any; total: any; estado: any; lugarpedido: any; comentario: any }) => ({
+                    idpedidodetalle: pedido.idpedidodetalle || 0,
+                    idpedido: pedido.idpedido || 0,
+                    nombre: pedido.nombre || '',
+                    idproducto: pedido.idproducto || 0,
+                    preciounitario: pedido.precioU || 0,
+                    cantidad: pedido.cantidad || 0,
+                    descripcion: pedido.descripcion || '',
+                    total: pedido.total || 0,
+                    estado: pedido.estado || false,
+                    lugarpedido: pedido.lugarpedido || '',
+                    comentario: pedido.comentario || '',
+                    idtopings: idtopingsArray || []
+                })
+            );
 
             status_array.forEach((element: any) => {
                 var toppings = element.toppings;
@@ -562,7 +598,8 @@ export class HomeComponent {
                     topings_.forEach((elementopping: any) => {
                         const topping = this.multiselectToppings.find((t: any) => t.idtopings == elementopping);
                         if (topping) idtopingsArray.push({ idtopings: topping.idtopings, nombre: topping.nombre });
-                        const lastDetalle = this.NuevoPedido.pedidodetalle.find((detalle) => detalle.idproducto == element.idproducto);
+                        debugger;
+                        const lastDetalle = this.NuevoPedido.pedidodetalle.find((detalle) => detalle.idpedidodetalle == element.idpedidodetalle);
                         // Asegurarse de que lastDetalle no sea undefined
                         if (lastDetalle) {
                             lastDetalle.idtopings = [...idtopingsArray];
@@ -634,6 +671,8 @@ export class HomeComponent {
     }
 
     seleccionarMesa(mesa: Mesa): void {
+        this.isLoading = true;
+
         if (this.tipomodal === 'Editar') {
             this.mesaSeleccionada = null;
             this.NuevoPedido = {
@@ -670,9 +709,11 @@ export class HomeComponent {
                 this.tipomodal = 'Registrar';
             }
         }
+        this.BuscarPlatoSearchText('');
+
         setTimeout(() => {
-            this.BuscarPlatoSearchText('');
-        }, 1500);
+            this.isLoading = false;
+        }, 300);
     }
     loadImageBase64(path: string): Promise<string> {
         return new Promise((resolve, reject) => {
@@ -692,6 +733,7 @@ export class HomeComponent {
             img.onerror = (error) => reject(error);
         });
     }
+
     generatePDF(pedido: NuevoPedido) {
         this.loadImageBase64('assets/img/logo.png').then((base64Logo) => {
             this.PedidoService.ShowProductosPdf(pedido.idpedido).subscribe((response) => {
@@ -750,9 +792,11 @@ export class HomeComponent {
                 y += 33;
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(10);
-
+                var date = new Date(response.data[0].created_at);
+                const datePart = date.toLocaleDateString('en-US');
+                const timePart = date.toLocaleTimeString('en-US');
                 // Datos
-                doc.text('Fecha: 09/05/2025 18:06:56', 6, y);
+                doc.text('Fecha: ' + datePart + ' ' + timePart, 6, y);
                 y += 5;
                 doc.text('Mesa: 1', 6, y);
                 y += 4;
@@ -873,12 +917,15 @@ export class HomeComponent {
             doc.setFont('helvetica', 'bold');
 
             // Encabezado
-
-            doc.setFontSize(10);
-            // Datos
-            doc.text('Fecha: 09/05/2025 18:06:56', centerX, y, { align: 'center' });
             y += 5;
-            doc.text('Mesa: 1                                ', centerX, y, { align: 'center' });
+
+            doc.setFontSize(14);
+
+            // Datos
+            doc.text('Fecha: 09/05/2025 18:06:56', 42, y, { align: 'center' });
+            y += 5;
+
+            doc.text('Mesa: 1                                ', 42, y, { align: 'center' });
             y += 7;
 
             doc.setFont('helvetica', 'normal');
