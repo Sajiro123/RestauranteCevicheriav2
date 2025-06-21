@@ -1,5 +1,6 @@
 import { Component, DebugElement } from '@angular/core';
 import { AperturaService } from '../../service/apertura.service';
+import { PedidoService } from '../../service/pedido.service';
 import { ImportsModule } from '../../imports';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
@@ -20,11 +21,13 @@ export class AperturaComponent {
     estado_caja = 0;
     GastosForm: FormGroup;
     CategoriaGastosList: { descripcion: string; idcategoriagastos: number }[] = [];
-    GastosList: any;
+    GastosList: { monto: number; descripcion: string; fecha: Date; idcategoriagatos: number; notas: string }[] = [];
     fechaActual: string = new Date().toISOString().split('T')[0];
+    Resumenventahoy: any = [];
 
     constructor(
         private AperturaService_: AperturaService,
+        private pedidoService_: PedidoService,
         private fb: FormBuilder,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
@@ -64,7 +67,6 @@ export class AperturaComponent {
         // Reemplazar "de junio de 2025" por "de junio del 2025"
         this.fecha_actual = fechaFormateada.replace(' de ', ' de ').replace(' de ', ' del ');
         this.ListAperturaNow();
-        this.ListCategoriasGastos();
         this.ListGastos();
     }
 
@@ -121,6 +123,17 @@ export class AperturaComponent {
         }
     }
 
+    ListarReporteHoy() {
+        this.pedidoService_.ReporteDiario().subscribe((response) => {
+            if (response.success) {
+                if (response.data) {
+                    this.Resumenventahoy = response.data;
+                    console.log(this.Resumenventahoy);
+                }
+            }
+        });
+    }
+
     totalGastos() {
         return this.GastosList.reduce((total: number, gasto: any) => total + (gasto.monto || 0), 0);
     }
@@ -133,7 +146,6 @@ export class AperturaComponent {
             }
             resumen[gasto.idcategoriagatos] += gasto.monto || 0;
         });
-        debugger;
         // Para mostrar saltos de línea en HTML, usa <br> y luego en el template usa [innerHTML]
         return Object.entries(resumen)
             .map(([idcategoriagatos, total]) => `${this.getCategoriaDescripcion(Number(idcategoriagatos))}: ${total}`)
@@ -144,6 +156,7 @@ export class AperturaComponent {
         this.AperturaService_.ListarAperturaHoy().subscribe((response) => {
             if (response.success) {
                 if (response.data) {
+                    this.ListGastos();
                     this.estado_caja = response.data[0]?.estado;
                     switch (response.data[0]?.estado) {
                         case '2':
@@ -153,9 +166,9 @@ export class AperturaComponent {
                         case '1':
                             this.texto_estado_caja = 'Caja Abierta deseas cerrarla?';
                             this.cajaForm.enable();
-
                             break;
                         default:
+                            this.cajaForm.enable();
                             break;
                     }
 
@@ -170,8 +183,12 @@ export class AperturaComponent {
                 } else {
                     this.texto_estado_caja = 'Abrir Caja Cerrada';
                     this.estado_caja = 0;
-                    this.cajaForm.enable();
                 }
+                // else {
+                //     this.texto_estado_caja = 'Abrir Caja Cerrada';
+                //     this.estado_caja = 0;
+                //     this.cajaForm.enable();
+                // }
             } else {
                 alert('Hubo un problema al conectar con el servidor');
             }
@@ -203,6 +220,8 @@ export class AperturaComponent {
                 if (response.data) {
                     this.GastosList = response.data;
                 }
+                this.ListCategoriasGastos();
+                this.ListarReporteHoy();
             } else {
                 alert('Hubo un problema al conectar con el servidor');
             }

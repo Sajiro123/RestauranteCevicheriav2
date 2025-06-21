@@ -16,6 +16,7 @@ import { TreeDemo } from './treedemo';
 import { MenuDemo } from './menudemo';
 import { HomeComponent } from '../modules/home/home.component';
 import { AperturaComponent } from '../modules/apertura/apertura.component';
+import { ReportesComponent } from '../modules/reportes/reportes.component';
 
 export default [
     // { path: 'button', data: { breadcrumb: 'Button' }, component: ButtonDemo },
@@ -23,7 +24,8 @@ export default [
     // { path: 'file', data: { breadcrumb: 'File' }, component: FileDemo },
     { path: 'formlayout', data: { breadcrumb: 'Form Layout' }, component: FormLayoutDemo },
     { path: 'home', data: { breadcrumb: 'Home' }, component: HomeComponent },
-    { path: 'apertura', data: { breadcrumb: 'Apertura' }, component: AperturaComponent }
+    { path: 'apertura', data: { breadcrumb: 'Apertura' }, component: AperturaComponent },
+    { path: 'reportes', data: { breadcrumb: 'Reportes' }, component: ReportesComponent }
 
     // { path: 'input', data: { breadcrumb: 'Input' }, component: InputDemo },
     // { path: 'list', data: { breadcrumb: 'List' }, component: ListDemo },
