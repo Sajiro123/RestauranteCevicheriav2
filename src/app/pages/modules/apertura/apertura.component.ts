@@ -21,7 +21,7 @@ export class AperturaComponent {
     estado_caja = 0;
     GastosForm: FormGroup;
     CategoriaGastosList: { descripcion: string; idcategoriagastos: number }[] = [];
-    GastosList: { monto: number; descripcion: string; fecha: Date; idcategoriagatos: number; notas: string }[] = [];
+    GastosList: { monto: number; descripcion: string; fecha: Date; idcategoriagastos: number; notas: string }[] = [];
     fechaActual: string = new Date().toISOString().split('T')[0];
     Resumenventahoy: any = [];
 
@@ -48,7 +48,7 @@ export class AperturaComponent {
             descripcion: ['', Validators.required],
             monto: [0.0, Validators.required],
             fecha: [hoy, Validators.required],
-            categoria: ['', Validators.required],
+            categoria: ["", Validators.required],
             notas: ['']
         });
     }
@@ -141,14 +141,14 @@ export class AperturaComponent {
         if (!this.GastosList) return '';
         const resumen: { [key: string]: number } = {};
         this.GastosList.forEach((gasto: any) => {
-            if (!resumen[gasto.idcategoriagatos]) {
-                resumen[gasto.idcategoriagatos] = 0;
+            if (!resumen[gasto.idcategoriagastos]) {
+                resumen[gasto.idcategoriagastos] = 0;
             }
-            resumen[gasto.idcategoriagatos] += gasto.monto || 0;
+            resumen[gasto.idcategoriagastos] += gasto.monto || 0;
         });
         // Para mostrar saltos de línea en HTML, usa <br> y luego en el template usa [innerHTML]
         return Object.entries(resumen)
-            .map(([idcategoriagatos, total]) => `${this.getCategoriaDescripcion(Number(idcategoriagatos))}: ${total}`)
+            .map(([idcategoriagastos, total]) => `${this.getCategoriaDescripcion(Number(idcategoriagastos))}: ${total}`)
             .join('     ||    ');
     }
 
@@ -199,6 +199,7 @@ export class AperturaComponent {
         this.AperturaService_.ListCategoriasGastos().subscribe((response) => {
             if (response.success) {
                 if (response.data) {
+                    debugger
                     this.CategoriaGastosList = response.data;
                 }
             } else {

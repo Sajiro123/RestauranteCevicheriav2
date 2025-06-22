@@ -48,7 +48,7 @@ export class AperturaService {
         var created_at = date.toISOString().split('T')[0]; // "2025-02-20" (UTC)
         var query = `INSERT INTO gastos
         (descripcion,
-        idcategoriagatos,
+        idcategoriagastos,
         monto,
         fecha
         ,notas
