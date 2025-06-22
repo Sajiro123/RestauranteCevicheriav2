@@ -75,8 +75,7 @@
                     </div>
                 </div>
 
-                <button class="btn" type="submit" [disabled]="cajaForm.invalid || cajaForm.pristine"
-                    [ngClass]="{ 'btn-danger': estado_caja == 2, 'btn-info': this.estado_caja == 1}"
+                <button class="btn" type="submit" [disabled]="cajaForm.invalid" style="cursor: pointer;" *ngIf="texto_estado_caja != 'Caja ya se Cerro (Hoy)'"
                     (click)="GuardarCaja(data_apertura.length)">{{ texto_estado_caja
                     }}</button>
             </div>
@@ -95,10 +94,10 @@
                     <input formControlName="monto" type="number" id="amount" name="amount" placeholder="Ejemplo: 15.50"
                         step="0.01" min="0" required aria-required="true" />
                 </div>
-                <div>
+                <!-- <div>
                     <label for="date">Fecha</label>
                     <input formControlName="fecha" type="date" id="date" name="date" required aria-required="true" />
-                </div>
+                </div> -->
                 <div>
                     <label for="category">Categoría</label>
                     <select formControlName="categoria" id="category" name="category" required aria-required="true">
@@ -123,32 +122,55 @@
             </main>
         </div>
 
-        <div class="w-full gastos" [formGroup]="GastosForm" style="width: 115%;">
+        <div class="w-full gastos" style="width: 100%;" *ngIf="GastosList.length > 0">
             <main class="card main" role="main" aria-label="Formulario de ingreso de gastos de comida">
                 <h1>Mis Gastos</h1>
-                <div style="overflow: scroll;height: 600px;">
+                <div style="overflow: scroll;height: 480px;margin-left: -25px;margin-right: -28px;">
                     <div class="expenses-section" *ngFor="let gasto of GastosList">
                         <div class="expense-item">
                             <div class="expense-desc">{{ gasto.descripcion | uppercase }}</div>
                             <div class="expense-details">
                                 <span style="color: red;">S/ {{ gasto.monto | number:'1.2-2' }}</span>
-                                <span>{{ gasto.fecha | date:'dd/MM/yyyy' }}</span>
-                                <span>
+                                <span class="expense-notes">{{ gasto.notas }}</span>
+                                <span style="margin-right: 20px;">
                                     {{ getCategoriaDescripcion(gasto.idcategoriagatos) }}
                                 </span>
                             </div>
-                            <div class="expense-notes">{{ gasto.notas }}</div>
                             <!-- <button class="delete-btn" (click)="eliminarGasto(gasto)">Eliminar</button> -->
                         </div>
                     </div>
                 </div>
-                <div class="expenses-total" style="margin-top: 20px; font-weight: bold;" *ngIf="GastosList.length > 0 ">
+                <div class="expenses-total" style="margin-top: 20px; font-weight: bold;font-size: 14px;"
+                    *ngIf="GastosList.length > 0 ">
                     Total de categoria: <br><br>
                     {{ resumenGastosPorCategoria()}}
                 </div>
-                <div class="expenses-total" style="margin-top: 20px; font-weight: bold;" *ngIf="GastosList.length > 0 ">
+                <div class="expenses-total" style="margin-top: 20px; font-weight: bold; font-size: 20px;"
+                    *ngIf="GastosList.length > 0 ">
                     Total de gastos: S/
                     {{ totalGastos() | number:'1.2-2' }}
+                </div>
+            </main>
+        </div>
+
+        <div class="w-full cajaresumen"  style="width: 100%;"
+            *ngIf="GastosList.length > 0 && estado_caja == 2">
+            <main class="card main" role="main" aria-label="Formulario de ingreso de gastos de comida">
+                <h1>Caja Resumen</h1>
+                <div class="card">
+                    <div class="card-header">Fecha: {{ fecha_actual }}</div>
+                    <div class="card-details" *ngFor="let data of Resumenventahoy">
+                        <p><strong>Yape:</strong> S/ {{data.YAPE}} </p>
+                        <p><strong>Plin:</strong> S/ {{data.PLIN}} </p>
+                        <p><strong>Visa:</strong> S/{{data.VISA}} </p>
+                        <p><strong>Efectivo:</strong> S/{{data.EFECTIVO}} </p>
+                        <hr>
+                        <h4>Total: S/ {{ (data.YAPE || 0) + (data.PLIN || 0) + (data.VISA || 0) + (data.EFECTIVO || 0) |
+                            number:'1.2-2' }}</h4>
+                        <p><strong>Gastos:</strong> S/{{ totalGastos() | number:'1.2-2' }} </p>
+                        <p><strong>Caja inicial:</strong> S/ {{ cajaForm.get('monto')?.value }} </p>
+
+                    </div>
                 </div>
             </main>
         </div>

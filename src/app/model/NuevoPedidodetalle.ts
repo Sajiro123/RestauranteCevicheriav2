@@ -9,4 +9,5 @@ export interface NuevoPedidodetalle {
     pedido_estado?: any;
     idtopings: { idtopings: number; nombre: string }[];
     id_created_at?: any;
+    idpedidodetalle?: number;
 }
