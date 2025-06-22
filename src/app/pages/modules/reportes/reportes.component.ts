@@ -15,7 +15,7 @@ import { TabsModule } from 'primeng/tabs';
 export class ReportesComponent {
     selectedRange: Date[] = [];
     selectedRange2: Date | null = null; // Initialize selectedRange2 as null
-
+    expandedRows = {};
     esLocale = ES_LOCALE;
     selectedDates: Date[] = [];
     @ViewChild('dt') dt!: Table; // Use the Table type from PrimeNGç
@@ -26,6 +26,15 @@ export class ReportesComponent {
     array_data_total: any[] = []; // Initialize array_data_total as an empty array
     constructor(private PedidoService: PedidoService) {}
 
+    expandAll() {
+        debugger;
+        this.expandedRows = this.PedidoReporte.reduce((acc, p) => (acc[p.id] = true) && acc, {});
+    }
+
+    collapseAll() {
+        this.expandedRows = {};
+    }
+
     filterGlobal(event: Event) {
         const input = event.target as HTMLInputElement; // Type assertion
         const value = input.value; // Safe access to value
@@ -35,7 +44,7 @@ export class ReportesComponent {
     handleCalendarBlur() {
         if (this.selectedRange.length === 2) {
             if (this.selectedRange[1] != null) {
-                this.showRerporte({
+                this.showRerportemount({
                     fechainicio: this.formatDateToMySQL(new Date(this.selectedRange[0])),
                     fechafin: this.formatDateToMySQL(new Date(this.selectedRange[1]))
                 });
@@ -48,15 +57,14 @@ export class ReportesComponent {
     DayCalendarBlur() {
         debugger;
         if (this.selectedRange2) {
-            this.showRerporteDay(this.formatDateToMySQL(new Date(this.selectedRange2)));
+            this.showReporteDay(this.formatDateToMySQL(new Date(this.selectedRange2)));
         } else {
             console.log('No se ha completado el rango de fechas');
         }
     }
 
-    showRerporte(parameters: any = {}) {
+    showRerportemount(parameters: any = {}) {
         this.Clients = [];
-        debugger;
 
         this.PedidoService.showRerporte(parameters).subscribe(
             (response: { success: any; data: any[] }) => {
@@ -125,10 +133,8 @@ export class ReportesComponent {
         );
     }
 
-    showRerporteDay(parameters: string) {
-        this.Clients = [];
-        debugger;
-
+    showReporteDay(parameters: string) {
+        this.PedidoReporte = [];
         this.PedidoService.ShowPedidosFecha(parameters).subscribe(
             (response: { success: any; data: any[] }) => {
                 if (response.success) {
@@ -144,6 +150,18 @@ export class ReportesComponent {
                         }
                     });
                     this.PedidoReporte = response.data;
+
+                    this.PedidoService.ReporteProductoDetalle(parameters).subscribe((response2: { success: any; data: any[] }) => {
+                        if (response2.success) {
+                            this.PedidoDetalle = response2.data;
+                            this.PedidoReporte = this.PedidoReporte.map((pedido: any) => {
+                                const detalle = this.PedidoDetalle.filter((d: any) => d.idpedido === pedido.idpedido);
+                                return { ...pedido, detalle };
+                            });
+                        } else {
+                            alert('Error al intentar consultar los detalles del producto');
+                        }
+                    });
                 } else {
                     alert('Error al intentar consultar');
                 }

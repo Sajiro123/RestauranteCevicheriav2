@@ -156,9 +156,14 @@ export class PedidoService {
     }
 
     insertPedido(arraypedido: NuevoPedido, mesa: string, comentario: string): Observable<any> {
+        arraypedido.pedidodetalle = arraypedido.pedidodetalle.filter((element: any) => element.idproducto !== 0);
+
         const date = new Date();
         const fecha = date.toISOString().split('T')[0]; // "2025-02-20" (UTC)
         var total = arraypedido.pedidodetalle.reduce((sum: number, product: { preciounitario: number; cantidad: number }) => sum + product.preciounitario * product.cantidad, 0);
+        debugger;
+        var total_pedidos = arraypedido.pedidodetalle.reduce((sum: number, product: { cantidad: number }) => sum + product.cantidad, 0);
+
         const insertQuery = `INSERT INTO pedido (created_at,
         total,
          total_pedidos,
@@ -168,7 +173,7 @@ export class PedidoService {
          comentario )
         VALUES (CURRENT_TIMESTAMP(),
         '${total}',
-         '${arraypedido.pedidodetalle.length}',
+         '${total_pedidos}',
          1,
          '${mesa}',
          '${fecha}',

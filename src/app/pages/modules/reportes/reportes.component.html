@@ -111,7 +111,7 @@
                 </div>
             </div>
             <div>
-                <p-table stripedRows #dt
+                <p-table stripedRows #dt [expandedRowKeys]="expandedRows"
                     [styleClass]="'table-sm mt-5 p-datatable-sm p-datatable-gridlines table-bordered p-datatable-striped ml-3'"
                     columnResizeMode="expand" [value]="PedidoReporte" rowGroupMode="rowspan" [rows]="10"
                     [paginator]="true" [tableStyle]="{ 'min-width': '5rem' }" [rowHover]="true" dataKey="idpedido"
@@ -119,7 +119,10 @@
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
                     [showCurrentPageReport]="true">
                     <ng-template pTemplate="header">
+
                         <tr>
+                            <td style="width:3%" style="min-width:3rem">
+                            </td>
                             <td style="width:5%" pSortableColumn="fecha" style="min-width:6rem">Fecha
                                 <p-sortIcon field="fecha" />
                             </td>
@@ -151,13 +154,14 @@
                             <th pSortableColumn="total" style="min-width:3rem">Total
                                 <p-sortIcon field="total" />
                             </th>
-                            <th>
-
-                            </th>
                         </tr>
                     </ng-template>
-                    <ng-template pTemplate="body" let-product>
+                    <ng-template pTemplate="body" let-product let-expanded="expanded">
                         <tr>
+                            <td>
+                                <p-button type="button" pRipple [pRowToggler]="product" [text]="true" [rounded]="true"
+                                    [plain]="true" [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
+                            </td>
                             <td>{{ product.fecha}}</td>
                             <td>{{ product.dia }}</td>
                             <td>{{ product.mesa}}</td>
@@ -168,13 +172,46 @@
                             <td>{{ 'S/'+ product.plin }}</td>
                             <td>{{ 'S/'+ product.visa }}</td>
                             <td>{{ 'S/'+product.total }}</td>
-                            <td><p-button icon="pi pi-file-pdf" class="p-button-rounded p-button-outlined"
-                                    styleClass="p-button-sm" aria-label="Exportar PDF"></p-button></td>
                         </tr>
                     </ng-template>
+
+                    <ng-template #expandedrow let-product>
+                        <tr>
+                            <td colspan="7">
+                                <div class="p-4">
+                                    <h5>Mesa {{ product.mesa }}</h5>
+                                    <p-table [value]="product.detalle" dataKey="idpedidodetalle">
+                                        <ng-template #header>
+                        <tr>
+                            <th>Lugarpedido </th>
+                            <th>Plato <p-sortIcon field="nombre" /></th>
+                            <th>Cantidad <p-sortIcon field="cantidad" /></th>
+                            <th>Precio Unitario</th>
+                            <th>Total</th>
+
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-productodetalle>
+                        <tr>
+                            <td>{{ (productodetalle.lugarpedido == 1 ?'llevar':'Mesa') }}</td>
+                            <td>{{ productodetalle.nombre }}</td>
+                            <td>{{ productodetalle.cantidad }}</td>
+                            <td>{{ productodetalle.precioU }}</td>
+                            <td>{{ productodetalle.total }}</td>
+                    </ng-template>
+                    <!-- <ng-template #emptymessage>
+                        <tr>
+                            <td colspan="6">There are no order for this product yet.</td>
+                        </tr>
+                    </ng-template> -->
                 </p-table>
             </div>
-            <!-- <p-confirmDialog [style]="{ width: '450px' }" /> -->
-        </p-tabPanel>
-    </p-tabView>
+            </td>
+            </tr>
+            </ng-template>
+            </p-table>
+</div>
+<!-- <p-confirmDialog [style]="{ width: '450px' }" /> -->
+</p-tabPanel>
+</p-tabView>
 </div>
