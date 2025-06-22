@@ -75,8 +75,9 @@
                     </div>
                 </div>
 
-                <button class="btn" type="submit" [disabled]="cajaForm.invalid" style="cursor: pointer;" *ngIf="texto_estado_caja != 'Caja ya se Cerro (Hoy)'"
-                    (click)="GuardarCaja(data_apertura.length)">{{ texto_estado_caja
+                <button class="btn" type="submit" [disabled]="cajaForm.invalid" style="cursor: pointer;"
+                    *ngIf="texto_estado_caja != 'Caja ya se Cerro (Hoy)'" (click)="GuardarCaja(data_apertura.length)">{{
+                    texto_estado_caja
                     }}</button>
             </div>
         </div>
@@ -87,12 +88,12 @@
                 <div>
                     <label for="expenseName">Descripción del gasto</label>
                     <input formControlName="descripcion" type="text" id="expenseName" name="expenseName"
-                        placeholder="Ejemplo: Compra de verduras" required aria-required="true" />
+                        placeholder="Ejemplo: Compra de verduras" required />
                 </div>
                 <div>
                     <label for="amount">Monto (PEN)</label>
                     <input formControlName="monto" type="number" id="amount" name="amount" placeholder="Ejemplo: 15.50"
-                        step="0.01" min="0" required aria-required="true" />
+                        step="0.01" min="0" required required />
                 </div>
                 <!-- <div>
                     <label for="date">Fecha</label>
@@ -100,7 +101,7 @@
                 </div> -->
                 <div>
                     <label for="category">Categoría</label>
-                    <select formControlName="categoria" id="category" name="category" required aria-required="true">
+                    <select formControlName="categoria" id="category" name="category" required>
                         <option value="" disabled selected>Seleccione una categoría</option>
                         <option value="{{list.idcategoriagastos}}" *ngFor="let list of CategoriaGastosList">
                             {{ list.descripcion }}
@@ -115,8 +116,8 @@
                 </div>
 
 
-                <button style="margin-top: 47px;" pButton type="submit"
-                    [disabled]="GastosForm.invalid || GastosForm.pristine" class="btn" (click)="GuardarGastos()">
+                <button style="margin-top: 47px;" pButton type="submit" [disabled]="GastosForm.invalid" class="btn"
+                    (click)="GuardarGastos()">
                     Registrar Gasto
                 </button>
             </main>
@@ -133,7 +134,7 @@
                                 <span style="color: red;">S/ {{ gasto.monto | number:'1.2-2' }}</span>
                                 <span class="expense-notes">{{ gasto.notas }}</span>
                                 <span style="margin-right: 20px;">
-                                    {{ getCategoriaDescripcion(gasto.idcategoriagatos) }}
+                                    {{ getCategoriaDescripcion(gasto.idcategoriagastos) }}
                                 </span>
                             </div>
                             <!-- <button class="delete-btn" (click)="eliminarGasto(gasto)">Eliminar</button> -->
@@ -153,8 +154,7 @@
             </main>
         </div>
 
-        <div class="w-full cajaresumen"  style="width: 100%;"
-            *ngIf="GastosList.length > 0 && estado_caja == 2">
+        <div class="w-full cajaresumen" style="width: 100%;" *ngIf="GastosList.length > 0 && estado_caja == 2">
             <main class="card main" role="main" aria-label="Formulario de ingreso de gastos de comida">
                 <h1>Caja Resumen</h1>
                 <div class="card">
