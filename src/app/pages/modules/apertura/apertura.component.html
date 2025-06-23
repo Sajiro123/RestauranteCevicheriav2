@@ -102,7 +102,7 @@
                 <div>
                     <label for="category">Categoría</label>
                     <select formControlName="categoria" id="category" name="category" required>
-                        <option value="" disabled selected>Seleccione una categoría</option>
+                        <option value="" selected>Seleccione una categoría</option>
                         <option value="{{list.idcategoriagastos}}" *ngFor="let list of CategoriaGastosList">
                             {{ list.descripcion }}
                         </option>
@@ -116,8 +116,8 @@
                 </div>
 
 
-                <button style="margin-top: 47px;" pButton type="submit" [disabled]="GastosForm.invalid" class="btn"
-                    (click)="GuardarGastos()">
+                <button style="margin-top: 47px;" pButton type="submit" [disabled]="isSubmitting || GastosForm.invalid"
+                    class="btn" (click)="GuardarGastos()">
                     Registrar Gasto
                 </button>
             </main>

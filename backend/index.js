@@ -14,8 +14,8 @@ app.use(cors());
 // Configuración del pool de conexiones (declarado como constante)
 const pool = mysql.createPool({
   host: '127.0.0.1',
-  user: 'root',
-  password: '',
+  user: 'alex',
+  password: '1234',
   database: 'bd_pruebas_',
   waitForConnections: true,
   connectionLimit: 10,

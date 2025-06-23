@@ -1,4 +1,4 @@
-import { Component, DebugElement } from '@angular/core';
+import { ChangeDetectorRef, Component, DebugElement } from '@angular/core';
 import { AperturaService } from '../../service/apertura.service';
 import { PedidoService } from '../../service/pedido.service';
 import { ImportsModule } from '../../imports';
@@ -24,13 +24,15 @@ export class AperturaComponent {
     GastosList: { monto: number; descripcion: string; fecha: Date; idcategoriagastos: number; notas: string }[] = [];
     fechaActual: string = new Date().toISOString().split('T')[0];
     Resumenventahoy: any = [];
+    isSubmitting = false;
 
     constructor(
         private AperturaService_: AperturaService,
         private pedidoService_: PedidoService,
         private fb: FormBuilder,
         private messageService: MessageService,
-        private confirmationService: ConfirmationService
+        private confirmationService: ConfirmationService,
+        private cd: ChangeDetectorRef
     ) {
         this.cajaForm = this.fb.group({
             estado: [1],
@@ -47,8 +49,8 @@ export class AperturaComponent {
         this.GastosForm = this.fb.group({
             descripcion: ['', Validators.required],
             monto: [0.0, Validators.required],
-            fecha: [hoy, Validators.required],
-            categoria: ["", Validators.required],
+            // fecha: [hoy, Validators.required],
+            categoria: ['', Validators.required],
             notas: ['']
         });
     }
@@ -118,6 +120,12 @@ export class AperturaComponent {
                 });
                 this.ListGastos();
                 this.GastosForm.reset();
+                this.GastosForm.markAsUntouched(); // ¡Importante! Limpia estados de validación
+                this.GastosForm.updateValueAndValidity(); // Forzar revalidación
+                this.cd.detectChanges(); // Forza detección de cambios
+
+                this.isSubmitting = false;
+
                 // this.ListAperturaNow();
             });
         }
@@ -199,7 +207,7 @@ export class AperturaComponent {
         this.AperturaService_.ListCategoriasGastos().subscribe((response) => {
             if (response.success) {
                 if (response.data) {
-                    debugger
+                    debugger;
                     this.CategoriaGastosList = response.data;
                 }
             } else {

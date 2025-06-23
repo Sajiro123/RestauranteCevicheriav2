@@ -136,7 +136,7 @@ export class PedidoService {
             INNER JOIN pedidodetalle p1 ON p.idpedido=p1.idpedido
             INNER JOIN producto p2 ON p1.idproducto=p2.idproducto
             INNER JOIN categoria c ON c.idcategoria=p2.idcategoria
-        WHERE p.estado=1  AND p.deleted  IS null  AND p1.deleted  IS null ORDER BY p2.idcategoria asc;`;
+        WHERE p.estado=1 AND date(p.created_at)=CURDATE() AND p.deleted  IS null  AND p1.deleted  IS null ORDER BY p2.idcategoria asc;`;
         return this.http.post<any>(this.apiUrl, { query });
     }
 
