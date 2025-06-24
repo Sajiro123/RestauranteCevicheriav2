@@ -22,7 +22,15 @@ export class AperturaComponent {
     GastosForm: FormGroup;
     CategoriaGastosList: { descripcion: string; idcategoriagastos: number }[] = [];
     GastosList: { monto: number; descripcion: string; fecha: Date; idcategoriagastos: number; notas: string }[] = [];
-    fechaActual: string = new Date().toISOString().split('T')[0];
+    fechaActual: string = new Date()
+        .toLocaleDateString('es-PE', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        })
+        .split('/')
+        .reverse()
+        .join('-');
     Resumenventahoy: any = [];
     isSubmitting = false;
 
@@ -132,7 +140,16 @@ export class AperturaComponent {
     }
 
     ListarReporteHoy() {
-        this.pedidoService_.ReporteDiario().subscribe((response) => {
+        const fecha = new Date()
+            .toLocaleDateString('es-PE', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            })
+            .split('/')
+            .reverse()
+            .join('-');
+        this.pedidoService_.ReporteDiario(fecha).subscribe((response) => {
             if (response.success) {
                 if (response.data) {
                     this.Resumenventahoy = response.data;
@@ -164,7 +181,6 @@ export class AperturaComponent {
         this.AperturaService_.ListarAperturaHoy().subscribe((response) => {
             if (response.success) {
                 if (response.data) {
-                    this.ListGastos();
                     this.estado_caja = response.data[0]?.estado;
                     switch (response.data[0]?.estado) {
                         case '2':
@@ -207,7 +223,6 @@ export class AperturaComponent {
         this.AperturaService_.ListCategoriasGastos().subscribe((response) => {
             if (response.success) {
                 if (response.data) {
-                    debugger;
                     this.CategoriaGastosList = response.data;
                 }
             } else {
@@ -224,7 +239,16 @@ export class AperturaComponent {
     }
 
     ListGastos() {
-        this.AperturaService_.ListGastos().subscribe((response) => {
+        const fecha = new Date()
+            .toLocaleDateString('es-PE', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            })
+            .split('/')
+            .reverse()
+            .join('-');
+        this.AperturaService_.ListGastos(fecha).subscribe((response) => {
             if (response.success) {
                 if (response.data) {
                     this.GastosList = response.data;

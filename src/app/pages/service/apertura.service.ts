@@ -16,8 +16,8 @@ export class AperturaService {
         return this.http.post<any>(this.apiUrl, { query });
     }
 
-    ListGastos() {
-        const query = `SELECT * FROM gastos g WHERE g.fecha=CURDATE() AND deleted IS NULL;`;
+    ListGastos(fecha: string) {
+        const query = `SELECT * FROM gastos g WHERE g.fecha='${fecha}'  AND deleted IS NULL;`;
         return this.http.post<any>(this.apiUrl, { query });
     }
 
