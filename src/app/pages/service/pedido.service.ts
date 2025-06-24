@@ -35,10 +35,10 @@ export class PedidoService {
         return this.http.post<any>(this.apiUrl, { query });
     }
 
-    ReporteDiario(): Observable<any> {
+    ReporteDiario(fecha: string): Observable<any> {
         const query = `select SUM(p.visa) AS VISA,SUM(p.yape) AS YAPE,SUM(p.efectivo) AS EFECTIVO,SUM(p.plin) AS PLIN ,p.fecha FROM pedido p
          WHERE p.estado=3
-         AND p.fecha = curdate() GROUP BY p.fecha;`;
+         AND p.fecha = '${fecha}' GROUP BY p.fecha;`;
         return this.http.post<any>(this.apiUrl, { query });
     }
 

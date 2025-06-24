@@ -6,6 +6,9 @@ import { PedidoService } from '../../service/pedido.service';
 import { Table } from 'primeng/table';
 import { ES_LOCALE } from '../../../model/util/calendar';
 import { TabsModule } from 'primeng/tabs';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import jsPDF from 'jspdf';
+import { AperturaService } from '../../service/apertura.service'; // <-- Add this import
 @Component({
     selector: 'app-reportes',
     imports: [CommonModule, ImportsModule, FormsModule], // <-- Add this
@@ -24,10 +27,16 @@ export class ReportesComponent {
     PedidoReporte: any[] = []; // Initialize PedidoReporte as an empty array
     array_data = [] as any;
     array_data_total: any[] = []; // Initialize array_data_total as an empty array
-    constructor(private PedidoService: PedidoService) {}
+    PDF_Dialog: boolean = false;
+    pdfUrl: SafeResourceUrl | null = null;
+    fecha_actual: any;
+    constructor(
+        private PedidoService: PedidoService,
+        private sanitizer: DomSanitizer,
+        private AperturaService_: AperturaService
+    ) {}
 
     expandAll() {
-        debugger;
         this.expandedRows = this.PedidoReporte.reduce((acc, p) => (acc[p.id] = true) && acc, {});
     }
 
@@ -55,12 +64,109 @@ export class ReportesComponent {
     }
 
     DayCalendarBlur() {
-        debugger;
         if (this.selectedRange2) {
             this.showReporteDay(this.formatDateToMySQL(new Date(this.selectedRange2)));
         } else {
             console.log('No se ha completado el rango de fechas');
         }
+    }
+
+    PdfReporteDiario(fecha: string) {
+        this.PedidoService.ReporteDiario(fecha).subscribe((response) => {
+            this.AperturaService_.ListGastos(fecha).subscribe((responsegastos) => {
+                var data = response.data[0];
+                var inicial = 140;
+                var total = parseInt(data.YAPE) + parseInt(data.VISA) + parseInt(data.EFECTIVO) + parseInt(data.PLIN);
+
+                const doc = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: [80, inicial] // Ticket en tamaño pequeño
+                });
+
+                let yPosition = 12;
+                const lineHeight = 8;
+
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(10);
+                const date = new Date(fecha);
+                this.fecha_actual = date.toISOString().split('T')[0];
+                debugger;
+                var totalgastos = 0;
+                var gastosarray = [];
+                if (responsegastos.data) {
+                    gastosarray = responsegastos.data;
+                    totalgastos = responsegastos.data.reduce((sum: number, item: { monto: number }) => sum + +item.monto, 0);
+                }
+
+                const opciones: Intl.DateTimeFormatOptions = {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                };
+
+                var dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+                var numeroDia = new Date(fecha).getDay() + 1;
+                var nombreDia = dias[numeroDia];
+
+                // Convertir la fecha a texto en español
+                const fechaFormateada = date.toLocaleDateString('es-ES', opciones);
+
+                // Reemplazar "de junio de 2025" por "de junio del 2025"
+                this.fecha_actual = fechaFormateada.replace(' de ', ' de ').replace(' de ', ' del ');
+
+                // Información básica
+                doc.text(`Fecha : ${this.fecha_actual}`, 9, yPosition);
+                yPosition += lineHeight;
+                doc.text(`Dia : ${nombreDia}`, 9, yPosition);
+                yPosition += lineHeight; // Espacio extra
+
+                // Métodos de pago
+                doc.text(`Yape : ${data.YAPE}`, 9, yPosition);
+                yPosition += lineHeight;
+                doc.text(`Plin : ${data.PLIN}`, 9, yPosition);
+                yPosition += lineHeight;
+                doc.text(`Efectivo : ${data.EFECTIVO}`, 9, yPosition);
+                yPosition += lineHeight;
+                doc.text(`Visa : ${data.VISA}`, 9, yPosition);
+                yPosition += lineHeight;
+
+                // Totales
+                doc.setFont('helvetica', 'bold');
+                doc.text(`Total : ${total}`, 9, yPosition);
+                yPosition += lineHeight;
+                doc.text(`Gastos Detalle :`, 9, yPosition);
+                doc.setFont('helvetica', 'normal');
+                yPosition += 5;
+
+                if (gastosarray.length != 0) {
+                    gastosarray.forEach((element: any) => {
+                        doc.text(element.descripcion.toLowerCase(), 12, yPosition);
+                        doc.text('S/' + element.monto.toString(), 42, yPosition, { align: 'right' });
+                        yPosition += 4;
+                    });
+                }
+                yPosition += 4;
+                doc.setFont('helvetica', 'bold');
+
+                doc.text(`Gastos Total : ${totalgastos}`, 9, yPosition);
+                yPosition += lineHeight;
+
+                // Cuando la imagen se cargue, agregarla al PDF
+                const pdfBlob = doc.output('blob');
+                const pdfUrl = URL.createObjectURL(pdfBlob);
+                this.PDFdescargar(pdfUrl);
+            });
+        });
+    }
+
+    hideDialogPdf() {
+        this.PDF_Dialog = false;
+    }
+
+    PDFdescargar(pdf: string) {
+        this.PDF_Dialog = true;
+        this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(pdf);
     }
 
     showRerportemount(parameters: any = {}) {
@@ -85,8 +191,6 @@ export class ReportesComponent {
                         plin_total += parseInt(element.PLIN);
                         visa_total += parseInt(element.VISA);
                         efectivo_total += parseInt(element.EFECTIVO);
-
-                        debugger;
                         var dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
                         var numeroDia = new Date(element.fecha).getDay() + 1;
                         var nombreDia = dias[numeroDia];
@@ -138,7 +242,6 @@ export class ReportesComponent {
         this.PedidoService.ShowPedidosFecha(parameters).subscribe(
             (response: { success: any; data: any[] }) => {
                 if (response.success) {
-                    debugger;
                     this.array_data = [] as any;
                     response.data.forEach((element: any) => {
                         if (element.fecha != undefined) {
@@ -188,7 +291,6 @@ export class ReportesComponent {
         // Usage example
     }
     formatDateToMySQL(date: Date): string {
-        debugger;
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
         const day = String(date.getDate()).padStart(2, '0');
