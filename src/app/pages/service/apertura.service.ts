@@ -22,8 +22,6 @@ export class AperturaService {
     }
 
     registrarCaja(value: any) {
-        var date = new Date();
-        var fecha = date.toISOString().split('T')[0]; // "2025-02-20" (UTC)
         var query = `INSERT INTO apertura
         (fecha
         ,total

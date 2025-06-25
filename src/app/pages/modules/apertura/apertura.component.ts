@@ -52,7 +52,7 @@ export class AperturaComponent {
 
         let dateHoy = new Date();
         dateHoy.setDate(dateHoy.getDate());
-        let hoy = dateHoy.toISOString().split('T')[0];
+        let hoy = new Date().toLocaleDateString('es-PE', { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-');
 
         this.GastosForm = this.fb.group({
             descripcion: ['', Validators.required],
@@ -65,14 +65,15 @@ export class AperturaComponent {
 
     ngOnInit(): void {
         const date = new Date();
-        this.fecha_actual = date.toISOString().split('T')[0];
+        this.fecha_actual = new Date().toLocaleDateString('es-PE', { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-');
+
         const opciones: Intl.DateTimeFormatOptions = {
             day: '2-digit',
             month: 'long',
             year: 'numeric'
         };
         // Convertir la fecha a texto en español
-        const fechaFormateada = date.toLocaleDateString('es-ES', opciones);
+        const fechaFormateada = date.toLocaleDateString('es-PE', opciones);
 
         // Reemplazar "de junio de 2025" por "de junio del 2025"
         this.fecha_actual = fechaFormateada.replace(' de ', ' de ').replace(' de ', ' del ');
@@ -140,15 +141,7 @@ export class AperturaComponent {
     }
 
     ListarReporteHoy() {
-        const fecha = new Date()
-            .toLocaleDateString('es-PE', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            })
-            .split('/')
-            .reverse()
-            .join('-');
+        const fecha = new Date().toLocaleDateString('es-PE', { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-');
         this.pedidoService_.ReporteDiario(fecha).subscribe((response) => {
             if (response.success) {
                 if (response.data) {

@@ -90,8 +90,10 @@ export class ReportesComponent {
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(10);
                 const date = new Date(fecha);
+                date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+
                 this.fecha_actual = date.toISOString().split('T')[0];
-                debugger;
+
                 var totalgastos = 0;
                 var gastosarray = [];
                 if (responsegastos.data) {
@@ -106,51 +108,98 @@ export class ReportesComponent {
                 };
 
                 var dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
-                var numeroDia = new Date(fecha).getDay() + 1;
+                var numeroDia = date.getDay() + 1;
                 var nombreDia = dias[numeroDia];
 
                 // Convertir la fecha a texto en español
-                const fechaFormateada = date.toLocaleDateString('es-ES', opciones);
+                const fechaFormateada = date.toLocaleDateString('es-PE', opciones);
 
                 // Reemplazar "de junio de 2025" por "de junio del 2025"
                 this.fecha_actual = fechaFormateada.replace(' de ', ' de ').replace(' de ', ' del ');
-
-                // Información básica
-                doc.text(`Fecha : ${this.fecha_actual}`, 9, yPosition);
-                yPosition += lineHeight;
-                doc.text(`Dia : ${nombreDia}`, 9, yPosition);
-                yPosition += lineHeight; // Espacio extra
-
-                // Métodos de pago
-                doc.text(`Yape : ${data.YAPE}`, 9, yPosition);
-                yPosition += lineHeight;
-                doc.text(`Plin : ${data.PLIN}`, 9, yPosition);
-                yPosition += lineHeight;
-                doc.text(`Efectivo : ${data.EFECTIVO}`, 9, yPosition);
-                yPosition += lineHeight;
-                doc.text(`Visa : ${data.VISA}`, 9, yPosition);
-                yPosition += lineHeight;
-
-                // Totales
+                var marginLeft = 9;
+                // Estilo para el título
+                doc.setFontSize(18);
                 doc.setFont('helvetica', 'bold');
-                doc.text(`Total : ${total}`, 9, yPosition);
-                yPosition += lineHeight;
-                doc.text(`Gastos Detalle :`, 9, yPosition);
-                doc.setFont('helvetica', 'normal');
-                yPosition += 5;
+                doc.text('Caja Resumen', marginLeft, yPosition);
+                yPosition += 10;
 
+                // Estilo para la fecha
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'normal');
+                doc.text(this.fecha_actual, marginLeft, yPosition);
+                yPosition += 10;
+
+                // Estilo para los métodos de pago
+                doc.setFont('helvetica', 'bold');
+                doc.text(`Yape: ${data.YAPE}`, marginLeft, yPosition);
+                yPosition += 7;
+
+                doc.text(`Plin: S/${data.PLIN}`, marginLeft, yPosition);
+                yPosition += 7;
+
+                doc.text(`Visa: S/${data.VISA}`, marginLeft, yPosition);
+                yPosition += 7;
+
+                doc.text(`Efectivo: S/${data.EFECTIVO}`, marginLeft, yPosition);
+                yPosition += 7;
+
+                // Línea divisoria
+                doc.setDrawColor(0);
+                doc.setLineWidth(0.5);
+                doc.line(marginLeft, yPosition, 200 - marginLeft, yPosition);
+                yPosition += 7;
+
+                // Total
+                doc.setFontSize(14);
+                doc.text(`Total: S/ ${total}`, marginLeft, yPosition);
+                yPosition += 10;
+
+                // Gastos y Caja inicial
+                doc.text(`Total Gastos: S/${totalgastos}`, marginLeft, yPosition);
+                yPosition += 7;
+
+                doc.text(`-------- Detalles Gastos ---------`, marginLeft, yPosition);
+
+                yPosition += 7;
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'normal');
                 if (gastosarray.length != 0) {
                     gastosarray.forEach((element: any) => {
-                        doc.text(element.descripcion.toLowerCase(), 12, yPosition);
+                        doc.text('* ' + element.descripcion.toLowerCase(), 12, yPosition);
                         doc.text('S/' + element.monto.toString(), 42, yPosition, { align: 'right' });
-                        yPosition += 4;
+                        yPosition += 6;
                     });
                 }
                 yPosition += 4;
-                doc.setFont('helvetica', 'bold');
 
-                doc.text(`Gastos Total : ${totalgastos}`, 9, yPosition);
-                yPosition += lineHeight;
+                // doc.text(`Caja inicial: S/ ${data.YAPE}`, marginLeft, yPosition);
+
+                // // Información básica
+                // doc.text(`Fecha : ${this.fecha_actual}`, 9, yPosition);
+                // yPosition += lineHeight;
+                // doc.text(`Dia : ${nombreDia}`, 9, yPosition);
+                // yPosition += lineHeight; // Espacio extra
+
+                // // Métodos de pago
+                // doc.text(`Yape : ${data.YAPE}`, 9, yPosition);
+                // yPosition += lineHeight;
+                // doc.text(`Plin : ${data.PLIN}`, 9, yPosition);
+                // yPosition += lineHeight;
+                // doc.text(`Efectivo : ${data.EFECTIVO}`, 9, yPosition);
+                // yPosition += lineHeight;
+                // doc.text(`Visa : ${data.VISA}`, 9, yPosition);
+                // yPosition += lineHeight;
+
+                // // Totales
+                // doc.setFont('helvetica', 'bold');
+                // doc.text(`Total : ${total}`, 9, yPosition);
+                // yPosition += lineHeight;
+                // doc.text(`Gastos Detalle :`, 9, yPosition);
+                // doc.setFont('helvetica', 'normal');
+                // yPosition += 5;
+
+                // doc.text(`Gastos Total : ${totalgastos}`, 9, yPosition);
+                // yPosition += lineHeight;
 
                 // Cuando la imagen se cargue, agregarla al PDF
                 const pdfBlob = doc.output('blob');
@@ -246,6 +295,7 @@ export class ReportesComponent {
                     response.data.forEach((element: any) => {
                         if (element.fecha != undefined) {
                             element.fecha = new Date(element.fecha).toISOString().split('T')[0]; // Formato YYYY-MM-DD
+
                             var dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
                             var numeroDia = new Date(element.fecha).getDay() + 1;
                             var nombreDia = dias[numeroDia];
@@ -278,6 +328,7 @@ export class ReportesComponent {
 
     formatDate(dateString: string | number | Date) {
         const date = new Date(dateString);
+        date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
 
         // Get day, month, year, hours, and minutes
         const day = String(date.getDate()).padStart(2, '0'); // Add leading zero
@@ -291,6 +342,7 @@ export class ReportesComponent {
         // Usage example
     }
     formatDateToMySQL(date: Date): string {
+        date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
         const day = String(date.getDate()).padStart(2, '0');

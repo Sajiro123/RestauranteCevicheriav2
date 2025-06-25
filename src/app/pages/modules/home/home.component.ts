@@ -394,7 +394,6 @@ export class HomeComponent {
             (await this.PedidoService.EditarPedido(this.NuevoPedido, this.comentarios))
                 .pipe(
                     switchMap((pedidoResponse: any) => {
-                        debugger;
                         // Creamos un array de observables para los detalles
                         const detallesObservables = this.NuevoPedido.pedidodetalle.map((element) => {
                             element.idpedido = this.NuevoPedido.idpedido;
@@ -598,7 +597,6 @@ export class HomeComponent {
                     topings_.forEach((elementopping: any) => {
                         const topping = this.multiselectToppings.find((t: any) => t.idtopings == elementopping);
                         if (topping) idtopingsArray.push({ idtopings: topping.idtopings, nombre: topping.nombre });
-                        debugger;
                         const lastDetalle = this.NuevoPedido.pedidodetalle.find((detalle) => detalle.idpedidodetalle == element.idpedidodetalle);
                         // Asegurarse de que lastDetalle no sea undefined
                         if (lastDetalle) {
@@ -1215,12 +1213,15 @@ export class HomeComponent {
         doc.setFont('helvetica', 'bold');
 
         // Encabezado
-
-        doc.setFontSize(10);
-        // Datos
-        doc.text('Fecha: 09/05/2025 18:06:56', centerX, y, { align: 'center' });
         y += 5;
-        doc.text('Mesa: 1                                ', centerX, y, { align: 'center' });
+
+        doc.setFontSize(14);
+
+        // Datos
+        doc.text('Fecha: 09/05/2025 18:06:56', 42, y, { align: 'center' });
+        y += 5;
+
+        doc.text('Mesa: 1                                ', 42, y, { align: 'center' });
         y += 7;
 
         doc.setFont('helvetica', 'normal');
@@ -1234,6 +1235,13 @@ export class HomeComponent {
             }
             if (element.lugarpedido == 0) data.push([element.cantidad, element.nombre, element.precioU * element.cantidad]);
         });
+        doc.setFont('helvetica', 'bold');
+
+        doc.text('PEDIDOS PARA MESA', centerX, y, { align: 'center' });
+        y += 5;
+        doc.text('=============================', centerX, y, { align: 'center' });
+        y += 5;
+        doc.setFont('helvetica', 'normal');
 
         data.forEach((element: any) => {
             const col1X = 5; // Posición X para la cantidad
@@ -1243,14 +1251,13 @@ export class HomeComponent {
             doc.text(element[0].toString(), col1X, y);
             doc.text(element[1], col2X, y);
             doc.text('S/' + element[2].toString(), col3X, y);
-            y += 5;
+            y += 4.5;
         });
 
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(12);
-        y += 3;
+        y += 5;
         if (this.estadopedido == 1) {
-            y += 5;
             doc.text('PEDIDOS PARA LLEVAR', centerX, y, { align: 'center' });
             y += 5;
             doc.text('=============================', centerX, y, { align: 'center' });
@@ -1270,15 +1277,57 @@ export class HomeComponent {
                 }
             });
         }
+
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        y += 7;
+        y += 4;
 
         doc.text('Comentario :', centerX, y, { align: 'center' });
-        y += 7;
+        y += 4;
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
+        doc.setFontSize(8);
+
+        const maxWidth = 73; // Ancho máximo en unidades del PDF (ajústalo según tu diseño)
+        const comentario = this.pedidosSeleccionados[0].comentario || ''; // Texto del comentario (o string vacío si es null/undefined)
+        const lines = doc.splitTextToSize(comentario, maxWidth);
+        // Posición inicial (x, y)
+        let x = 5;
+        let currentY = y; // 'y' es la posición vertical inicial que ya tienes definida
+
+        // Imprimir cada línea
+        lines.forEach((line: string | string[]) => {
+            doc.text(line, x, currentY);
+            currentY += 4; // Espacio entre líneas (ajusta según necesidad)
+        });
         y += 5;
+        doc.setFontSize(8);
+        this.pedidosSeleccionados.forEach((element: any) => {
+            var toppings = element.toppings;
+
+            if (toppings && toppings != 0) {
+                var topings_ = toppings.split(',');
+                var texto_topping = '';
+                topings_.forEach((elementopping: any) => {
+                    const topping = this.multiselectToppings.find((t: any) => t.idtopings == elementopping);
+                    if (topping) texto_topping += topping.nombre + ', ';
+
+                    // idtopings: topping.idtopings, nombre: topping.nombre  ;
+                    // const lastDetalle = this.NuevoPedido.pedidodetalle.find((detalle) => detalle.idproducto == element.idproducto);
+                    // // Asegurarse de que lastDetalle no sea undefined
+                    // if (lastDetalle) {
+                    //     lastDetalle.idtopings = [...idtopingsArray];
+                    // }
+                });
+                doc.setFont('helvetica', 'bold');
+                doc.text(element.nombre, centerX, y, { align: 'center' });
+
+                const fontSize = doc.getFontSize(); // Obtiene el tamaño de fuente actual
+                y += fontSize * 0.4; // Ajuste fino (0.2 es un factor para reducir espacio)
+                doc.text(texto_topping, centerX, y, { align: 'center' });
+                y += 6;
+            }
+        });
+
         // Cuando la imagen se cargue, agregarla al PDF
         const pdfBlob = doc.output('blob');
         const pdfUrl = URL.createObjectURL(pdfBlob);
