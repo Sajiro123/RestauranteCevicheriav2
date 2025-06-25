@@ -68,9 +68,6 @@ export class PedidoService {
     }
 
     async EditarPedido(arraypedido: NuevoPedido, comentario: string) {
-        const date = new Date();
-        const fecha = date.toISOString().split('T')[0];
-
         // Calcular el total
         const total = arraypedido.pedidodetalle.reduce((sum: number, product: { preciounitario: number; cantidad: number }) => sum + product.preciounitario * product.cantidad, 0);
 
@@ -79,7 +76,7 @@ export class PedidoService {
             UPDATE pedido
             SET comentario = '${this.escapeSqlValue(comentario)}',
                 total_pedidos = ${arraypedido.pedidodetalle.length},
-                updated_at = '${fecha}',
+                updated_at = curdate(),
                 total = ${total}
             WHERE idpedido = '${arraypedido.idpedido}'`;
 
@@ -161,7 +158,6 @@ export class PedidoService {
         const date = new Date();
         const fecha = date.toISOString().split('T')[0]; // "2025-02-20" (UTC)
         var total = arraypedido.pedidodetalle.reduce((sum: number, product: { preciounitario: number; cantidad: number }) => sum + product.preciounitario * product.cantidad, 0);
-        debugger;
         var total_pedidos = arraypedido.pedidodetalle.reduce((sum: number, product: { cantidad: number }) => sum + product.cantidad, 0);
 
         const insertQuery = `INSERT INTO pedido (created_at,
@@ -175,7 +171,7 @@ export class PedidoService {
         '${total}',
          '${total_pedidos}',
          1,
-         '${mesa}',
+         curdate(),
          '${fecha}',
           '${comentario}')`;
         const selectQuery = `SELECT LAST_INSERT_ID() AS id;`;
@@ -186,7 +182,6 @@ export class PedidoService {
     insertPedidoDetalle(arraypedido: NuevoPedidodetalle): Observable<any> {
         var toppings = '';
         if (arraypedido.idtopings.length > 0) {
-            debugger;
             arraypedido.idtopings.forEach((element: any, index: number) => {
                 toppings += `${element.idtopings},`;
             });
