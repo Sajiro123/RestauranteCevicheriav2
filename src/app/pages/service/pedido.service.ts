@@ -171,8 +171,8 @@ export class PedidoService {
         '${total}',
          '${total_pedidos}',
          1,
+         '${mesa}',
          curdate(),
-         '${fecha}',
           '${comentario}')`;
         const selectQuery = `SELECT LAST_INSERT_ID() AS id;`;
 
