@@ -130,7 +130,7 @@ export class HomeComponent {
         private messageService: MessageService,
         private cd: ChangeDetectorRef,
         private sanitizer: DomSanitizer
-    ) {}
+    ) { }
 
     ngOnInit(): void {
         // LoaderComponent.isLoading = true; // Set loading state to true
@@ -937,13 +937,17 @@ export class HomeComponent {
                 }
                 if (element.lugarpedido == 0) data.push([element.cantidad, element.nombre, element.precioU * element.cantidad]);
             });
-            doc.setFont('helvetica', 'bold');
+            if (data.length > 0) {
+                doc.setFont('helvetica', 'bold');
 
-            doc.text('PEDIDOS PARA MESA', centerX, y, { align: 'center' });
-            y += 5;
-            doc.text('=============================', centerX, y, { align: 'center' });
-            y += 5;
-            doc.setFont('helvetica', 'normal');
+                doc.text('PEDIDOS PARA MESA', centerX, y, { align: 'center' });
+                y += 5;
+                doc.text('=============================', centerX, y, { align: 'center' });
+                y += 5;
+                doc.setFont('helvetica', 'normal');
+
+            }
+
 
             data.forEach((element: any) => {
                 const col1X = 5; // Posición X para la cantidad
@@ -1235,14 +1239,16 @@ export class HomeComponent {
             }
             if (element.lugarpedido == 0) data.push([element.cantidad, element.nombre, element.precioU * element.cantidad]);
         });
-        doc.setFont('helvetica', 'bold');
+        if (data.length > 0) {
 
-        doc.text('PEDIDOS PARA MESA', centerX, y, { align: 'center' });
-        y += 5;
-        doc.text('=============================', centerX, y, { align: 'center' });
-        y += 5;
-        doc.setFont('helvetica', 'normal');
+            doc.setFont('helvetica', 'bold');
 
+            doc.text('PEDIDOS PARA MESA', centerX, y, { align: 'center' });
+            y += 5;
+            doc.text('=============================', centerX, y, { align: 'center' });
+            y += 5;
+            doc.setFont('helvetica', 'normal');
+        }
         data.forEach((element: any) => {
             const col1X = 5; // Posición X para la cantidad
             const col2X = 9; // Posición X para el nombre del producto
