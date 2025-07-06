@@ -155,7 +155,7 @@ export class ReportesComponent {
                 yPosition += 10;
 
                 // Gastos y Caja inicial
-                doc.text(`Total Gastos: S/${totalgastos}`, marginLeft, yPosition);
+                doc.text(`Total Gastos: S/${ Math.round(totalgastos* 100) / 100}`, marginLeft, yPosition);
                 yPosition += 7;
 
                 doc.text(`-------- Detalles Gastos ---------`, marginLeft, yPosition);
@@ -241,7 +241,7 @@ export class ReportesComponent {
                         visa_total += parseInt(element.VISA);
                         efectivo_total += parseInt(element.EFECTIVO);
                         var dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
-                        var numeroDia = new Date(element.fecha).getDay() + 1;
+                        var numeroDia = new Date(element.fecha).getDay();
                         var nombreDia = dias[numeroDia];
                         var total = parseInt(element.YAPE) + parseInt(element.VISA) + parseInt(element.EFECTIVO) + parseInt(element.PLIN);
                         TOTAL_TOTAL += total;
@@ -295,9 +295,9 @@ export class ReportesComponent {
                     response.data.forEach((element: any) => {
                         if (element.fecha != undefined) {
                             element.fecha = new Date(element.fecha).toISOString().split('T')[0]; // Formato YYYY-MM-DD
-
+                            debugger
                             var dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
-                            var numeroDia = new Date(element.fecha).getDay() + 1;
+                            var numeroDia = new Date(element.fecha).getDay();
                             var nombreDia = dias[numeroDia];
                             element.dia = nombreDia;
                         }

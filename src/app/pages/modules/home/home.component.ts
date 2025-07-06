@@ -796,7 +796,7 @@ export class HomeComponent {
                 // Datos
                 doc.text('Fecha: ' + datePart + ' ' + timePart, 6, y);
                 y += 5;
-                doc.text('Mesa: 1', 6, y);
+                doc.text('Mesa: ' + response.data[0].mesa, 6, y);
                 y += 4;
                 doc.setFontSize(9);
 
@@ -860,6 +860,7 @@ export class HomeComponent {
     }
 
     generateCocinaPDF(pedido: any) {
+        debugger
         this.PedidoService.ShowProductosPdf(pedido.idpedido).subscribe((response) => {
             this.estadopedido = 0;
             var inicial = 100;
@@ -923,7 +924,7 @@ export class HomeComponent {
             doc.text('Fecha: 09/05/2025 18:06:56', 42, y, { align: 'center' });
             y += 5;
 
-            doc.text('Mesa: 1                                ', 42, y, { align: 'center' });
+            doc.text('Mesa: ' + response.data[0].mesa, 42, y, { align: 'center' });
             y += 7;
 
             doc.setFont('helvetica', 'normal');
@@ -1224,8 +1225,9 @@ export class HomeComponent {
         // Datos
         doc.text('Fecha: 09/05/2025 18:06:56', 42, y, { align: 'center' });
         y += 5;
+        debugger;
 
-        doc.text('Mesa: 1                                ', 42, y, { align: 'center' });
+        doc.text('Mesa:' + this.pedidosSeleccionados[0].mesa, 42, y, { align: 'center' });
         y += 7;
 
         doc.setFont('helvetica', 'normal');
