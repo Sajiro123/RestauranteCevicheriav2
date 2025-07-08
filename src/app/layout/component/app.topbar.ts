@@ -33,7 +33,7 @@ import { LayoutService } from '../service/layout.service';
                         />
                     </g>
                 </svg>
-                <span>SAKAI</span>
+                <span style="width: 100% !important;">Cevicheria Willy Norteño Sac</span>
             </a>
         </div>
 

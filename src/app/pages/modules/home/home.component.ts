@@ -130,7 +130,7 @@ export class HomeComponent {
         private messageService: MessageService,
         private cd: ChangeDetectorRef,
         private sanitizer: DomSanitizer
-    ) { }
+    ) {}
 
     ngOnInit(): void {
         // LoaderComponent.isLoading = true; // Set loading state to true
@@ -640,7 +640,9 @@ export class HomeComponent {
     }
 
     pricechange(pedidosnew: NuevoPedidodetalle) {
-        pedidosnew.total = pedidosnew.cantidad * pedidosnew.preciounitario;
+        if (pedidosnew.preciounitario > 0) {
+            pedidosnew.total = pedidosnew.cantidad * pedidosnew.preciounitario;
+        }
     }
 
     ListarPedidos(): void {
@@ -785,7 +787,7 @@ export class HomeComponent {
                 y += 3.5;
                 doc.text('Av.Victor Malazques Mr Lt10 Pachamac-Manchay', centerX, y, { align: 'center' });
                 y += 3.5;
-                doc.text('TEL: 928 314 085', centerX, y, { align: 'center' });
+                doc.text('TEL: 991 687 503', centerX, y, { align: 'center' });
                 doc.addImage(base64Logo, 'PNG', 27, 25, 29, 28);
                 y += 33;
                 doc.setFont('helvetica', 'bold');
@@ -946,9 +948,7 @@ export class HomeComponent {
                 doc.text('=============================', centerX, y, { align: 'center' });
                 y += 5;
                 doc.setFont('helvetica', 'normal');
-
             }
-
 
             data.forEach((element: any) => {
                 const col1X = 5; // Posición X para la cantidad
@@ -1242,7 +1242,6 @@ export class HomeComponent {
             if (element.lugarpedido == 0) data.push([element.cantidad, element.nombre, element.precioU * element.cantidad]);
         });
         if (data.length > 0) {
-
             doc.setFont('helvetica', 'bold');
 
             doc.text('PEDIDOS PARA MESA', centerX, y, { align: 'center' });

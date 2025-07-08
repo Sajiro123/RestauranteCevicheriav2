@@ -24,7 +24,7 @@ export class AppMenu {
                 label: 'Modulos',
                 items: [
                     { label: 'Mesas', icon: 'pi pi-fw pi-id-card', routerLink: ['/uikit/home'] },
-                    { label: 'Configuraciones', icon: 'pi pi-fw pi-cog', routerLink: ['/uikit/configuracion'] },
+                    { label: 'Configuraciones', icon: 'pi pi-fw pi-cog', routerLink: ['/uikit/configuration'] },
                     { label: 'Apertura', icon: 'pi pi-fw pi-clock', routerLink: ['/uikit/apertura'] },
                     { label: 'Reportes', icon: 'pi pi-chart-line', routerLink: ['/uikit/reportes'] }
                 ]
