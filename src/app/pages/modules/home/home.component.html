@@ -13,27 +13,75 @@
     <div class="mx-auto max-w-md overflow-hidden rounded-xl bg-white md:max-w-2xl" style="max-width: 100%;">
         <!-- IZQUIERDA: MESAS -->
         <div class="md:flex">
-            <div class="mesas md:shrink-0">
-                <h2>Mesas</h2>
-                <div class="grid" style="margin-left: 10px;">
-                    <div *ngFor="let mesa of mesas" class="mesa" (click)="seleccionarMesa(mesa)" [ngClass]="{
+            <p-tabView class="p-tablist">
+                <p-tabPanel header="Mesas" [selected]="true">
+                    <div class="mesas md:shrink-0">
+                        <div class="grid" style="margin-left: 10px;">
+                            <ng-container *ngFor="let mesa of mesas">
+                                <div class="mesa" (click)="seleccionarMesa(mesa)" *ngIf="mesa.numero != '0'" [ngClass]="{
                                   'seleccionada': mesaSeleccionada?.numero === mesa.numero
                                 }">
-                        <div class="estado" [ngClass]="{
+                                    <div class="estado" [ngClass]="{
                                   'ocupada': estadomesa[+mesa.numero].value.toString() === '1',
                                   'libre': estadomesa[+mesa.numero].value.toString() === '0'
                                 }"></div>
-                        <div class="texto">Mesa Nº{{ mesa.numero }}</div>
+                                    <div class="texto">Mesa Nº{{ mesa.numero }}</div>
+                                </div>
+                            </ng-container>
+
+                        </div>
                     </div>
-                </div>
-            </div>
+                </p-tabPanel>
+                <p-tabPanel header="Delivery">
+                    <div class="text-right">
+                        <p-button [label]="'NUEVO DELIVERY'"
+                            (click)="seleccionarMesa({numero: '0', estado: '0', pedidos: []})" severity="info"
+                            icon="pi pi-phone" size="large">
+                        </p-button>
+                    </div>
+                    <div class="mesas md:shrink-0" style="width: 706px;display: flex;">
+                        <div class="grid">
+                            <ng-container
+                                *ngFor="let pedido of Pedidos | unique: 'idpedido' | orderBy: 'idpedido':true">
+                                <div class="pedido-card" *ngIf="+pedido.mesa === 0 " [ngClass]="{
+                                  'seleccionada_delivery': mesaSeleccionada?.idpedido === pedido.idpedido}"
+                                    (click)="seleccionarMesa({numero: '0', estado: '0', pedidos: [],idpedido: pedido.idpedido})">
+                                    <div class="header">
+                                        <div class="numero-pedido">{{ "#"+ pedido.idpedido }}</div>
+                                    </div>
+                                    <div class="cliente">
+                                        <h2>{{ pedido.cliente }}</h2>
+                                        <div class="hora">{{ pedido.pedido_hora }}</div>
+                                    </div>
+                                    <div class="acciones">
+                                        <div class="btn btn-editar">Editar</div>
+                                    </div>
+                                </div>
+                            </ng-container>
+                        </div>
+
+                        <!-- <div class="grid" style="margin-left: 10px;">
+                            <div class="mesa" (click)="seleccionarMesa({numero: '0', estado: '0', pedidos: []})">
+                                <div class="estado" [ngClass]="{
+                                  'ocupada': estadomesa[0].value.toString() === '1',
+                                  'libre': estadomesa[0].value.toString() === '0'
+                                }"></div>
+                                <div class="texto">Delivery</div>
+                            </div>
+                        </div> -->
+                    </div>
+                </p-tabPanel>
+
+            </p-tabView>
+
+
 
 
             <!-- CENTRO: DETALLE DE PEDIDOS -->
             <div class="detalle md:shrink-0  ml-auto" *ngIf="pedido_mesa_status">
                 <div *ngFor="let numMesa of mesas" style="margin-left: 15px">
 
-                    <div *ngIf="mesaSeleccionada?.numero == numMesa.numero;" class="mt-5">
+                    <div *ngIf="mesaSeleccionada?.numero == numMesa.numero" class="mt-5">
                         <div class="fila_botones">
                             <button (click)="editar(numMesa,NuevoPedido)"> <i
                                     class="material-icons">edit</i>Editar</button>
@@ -46,7 +94,9 @@
                             <button (click)="deletepedidoModal()"><i
                                     class="material-icons fa-solid fa-trash"></i>Cancelar</button>
                         </div>
-                        <h2 class="text-red-600  font-bold text-center">Mesa {{ numMesa.numero }}
+                        <h2 class="text-red-600  font-bold text-center"> {{ (numMesa.numero == "0" ?'Delivery' :
+                            'Pedido de Mesa '+numMesa.numero )
+                            }}
                             &nbsp; <p-button icon="pi pi-file-pdf" severity="danger"
                                 (onClick)="imprimirpedidodialog(Pedidos)" />
                         </h2>
@@ -64,7 +114,7 @@
                             </thead>
                             <tbody>
                                 <tr class="border border-gray-300"
-                                    *ngFor="let pedido of getPedidosDeMesa(numMesa.numero,pedido_mesa_status)">
+                                    *ngFor="let pedido of getPedidosDeMesa(numMesa.numero,pedido_mesa_status,mesaSeleccionada)">
                                     <td>{{ pedido.cantidad }}</td>
                                     <td>{{ pedido.categoria }}</td>
                                     <td>{{ pedido.nombre }}</td>
@@ -78,7 +128,8 @@
                                     </td>
                                     <td class="font-bold">
                                         <h3>
-                                            {{'S/' +calculateTotalPedidos(numMesa.numero, pedido_mesa_status) }}
+                                            {{'S/' +calculateTotalPedidos(numMesa.numero,
+                                            pedido_mesa_status,mesaSeleccionada) }}
                                         </h3>
                                     </td>
                                 </tr>
@@ -104,7 +155,8 @@
                     </div>
 
                     <div class="w-32 flex-auto text-center  ">
-                        <h2 class="text-red-600">Pedido de Mesa {{ this.mesaSeleccionada.numero }}</h2>
+                        <h2 class="text-red-600"> {{ (this.mesaSeleccionada.numero == "0" ?'Delivery'
+                            :'Pedido de Mesa '+ this.mesaSeleccionada.numero) }}</h2>
                     </div>
                 </div>
                 <div class="container">
@@ -128,7 +180,8 @@
                                             <div style="display: flex; flex-direction: column;">
                                                 <span>{{ pedidosnew.nombre }}</span>
                                                 <div style="margin-top: 5px; display: flex; flex-wrap: wrap; gap: 5px;">
-                                                    @for (topping of pedidosnew.idtopings; track topping.idtopings) {
+                                                    @for (topping of pedidosnew.idtopings; track topping.idtopings)
+                                                    {
                                                     <p-tag *ngIf="topping.idtopings != 0">
                                                         <div>{{ topping.nombre }}</div>
                                                     </p-tag>
@@ -166,7 +219,8 @@
                                                     [style]="{ width: '650px',height: '400px' }">
                                                     <div class="flex justify-end mt-6">
                                                         <div style="margin-right: 100px !important;"
-                                                            class="font-semibold text-xl">Seleccionar Opciones :</div>
+                                                            class="font-semibold text-xl">Seleccionar Opciones :
+                                                        </div>
 
                                                         <p-button label="Cerrar" icon="pi pi-times"
                                                             (onClick)="op2.hide()" class="mr-2" />
@@ -207,7 +261,12 @@
                         <div class="text-right mt-4">
                             <h3>Total: S/{{ total() }}</h3>
                         </div>
+
+
                         <div class="text-right mt-4">
+                            <input id="cliente" type="text" [(ngModel)]="NuevoPedido.cliente" pInputText
+                                *ngIf="NuevoPedido.delivery == 1" style="width: 328px;margin-right: 61px !important;"
+                                placeholder="Nombre del cliente (opcional)" required autofocus fluid />
                             <p-button [label]="tipomodal =='Registrar' ? 'REGISTRAR PEDIDO' : 'EDITAR PEDIDO'"
                                 (click)="FunctionButtonPedido(NuevoPedido)" severity="success"
                                 [style]="{'width': '207px','text-align': 'center' }" class="btn btn-success">
@@ -219,7 +278,6 @@
 
                         <div class="input-group mt-4 modal-body">
                             <p-iconfield>
-
                                 <p-inputicon styleClass="pi pi-search" />
                                 <input pInputText type="text" name="plato" id="idplatotext"
                                     (keypress)="AddKeyPress($event,buscarPlato);"
@@ -232,14 +290,10 @@
                         <div class="col-md-12 modal-body">
                             <div class="" style="overflow: scroll; height: 300px;">
                                 <table class="table table-hover table-sm" id="listarPlatos">
-                                    <tbody>
-
-                                    </tbody>
+                                    <tbody></tbody>
                                 </table>
                             </div>
                         </div>
-
-
                     </div>
                 </div>
             </div>
@@ -273,6 +327,7 @@
         </div>
     </p-dialog>
 </div>
+<!-- Modal PDF COBRAR-->
 <p-dialog [(visible)]="Cobrar_Dialog" [position]="'top'" header="Cobrar Pedido" [style]="{ width: '600px' }"
     [modal]="true" [draggable]="false" [resizable]="false" styleClass="p-fluid">
     <ng-template pTemplate="content">
@@ -364,7 +419,6 @@
     </ng-template>
 </p-dialog>
 <!-- Modal PDF ESCOGER PEDIDO-->
-
 <p-dialog header="PDF" [modal]="true" [(visible)]="imprimirPedidoDialog" [style]="{ width: '500px', height: '880px'}">
     <div class="container">
         <table class="table-auto w-full h-auto border-collapse border border-gray-400 text-center">
@@ -381,7 +435,8 @@
 
             <tbody>
                 <ng-container *ngIf="Pedidos?.length != 0">
-                    <tr *ngFor="let pedido of getPedidosDeMesa(mesaSeleccionada?.numero,pedido_mesa_status)">
+                    <tr
+                        *ngFor="let pedido of getPedidosDeMesa(mesaSeleccionada?.numero,pedido_mesa_status,mesaSeleccionada)">
                         <td class="">
                             <input type="checkbox" class="w-6 h-6" [(ngModel)]="pedido.seleccionado" />
                         </td>

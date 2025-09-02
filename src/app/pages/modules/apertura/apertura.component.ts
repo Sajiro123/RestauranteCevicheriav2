@@ -64,6 +64,7 @@ export class AperturaComponent {
     }
 
     ngOnInit(): void {
+        debugger;
         const date = new Date();
         this.fecha_actual = new Date().toLocaleDateString('es-PE', { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-');
 
@@ -176,11 +177,11 @@ export class AperturaComponent {
                 if (response.data) {
                     this.estado_caja = response.data[0]?.estado;
                     switch (response.data[0]?.estado) {
-                        case '2':
+                        case 2:
                             this.texto_estado_caja = 'Caja ya se Cerro (Hoy)';
                             this.cajaForm.disable();
                             break;
-                        case '1':
+                        case 1:
                             this.texto_estado_caja = 'Caja Abierta deseas cerrarla?';
                             this.cajaForm.enable();
                             break;

@@ -1,3 +1,5 @@
+<p-toast styleClass="text-2xl" />
+
 <div class="card" style="margin-top: 2%;">
     <p-tabView>
         <p-tabPanel header="Reporte General" [selected]="true">
@@ -231,3 +233,6 @@
             (onClick)="hideDialogPdf()" [style]="{'margin-left': '20px','margin-top': '55px;' }"></p-button>
     </ng-template>
 </p-dialog>
+
+
+<p-confirmDialog [style]="{ width: '450px' }" />
