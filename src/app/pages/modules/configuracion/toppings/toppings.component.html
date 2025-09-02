@@ -3,34 +3,18 @@
     <p-togglebutton [(ngModel)]="balanceFrozen" [onIcon]="'pi pi-lock'" offIcon="pi pi-lock-open" [onLabel]="'Balance'"
         offLabel="Balance" />
 
-    <p-table [value]="customers2" [scrollable]="true" scrollHeight="400px" styleClass="mt-4">
+    <p-table [value]="dataTopping" [scrollable]="true" scrollHeight="400px" styleClass="mt-4">
         <ng-template #header>
             <tr>
-                <th style="min-width:200px" pFrozenColumn class="font-bold">Name</th>
-                <th style="min-width:100px">Id</th>
-                <th style="min-width:200px">Country</th>
-                <th style="min-width:200px">Date</th>
-                <th style="min-width:200px">Company</th>
-                <th style="min-width:200px">Status</th>
-                <th style="min-width:200px">Activity</th>
-                <th style="min-width:200px">Representative</th>
-                <th style="min-width:200px" alignFrozen="right" pFrozenColumn [frozen]="balanceFrozen"
-                    [ngClass]="{ 'font-bold': balanceFrozen }">Balance</th>
+                <th style="min-width:200px" pFrozenColumn class="font-bold">Nombre</th>
+                <th style="min-width:200px" pFrozenColumn class="font-bold">Editar</th>
             </tr>
         </ng-template>
         <ng-template #body let-customer>
             <tr>
-                <td pFrozenColumn class="font-bold">{{ customer.name }}</td>
-                <td style="min-width:100px">{{ customer.id }}</td>
-                <td>{{ customer.country.name }}</td>
-                <td>{{ customer.date }}</td>
-                <td>{{ customer.company }}</td>
-                <td>{{ customer.status }}</td>
-                <td>{{ customer.activity }}</td>
-                <td>{{ customer.representative.name }}</td>
-                <td alignFrozen="right" pFrozenColumn [frozen]="balanceFrozen"
-                    [ngClass]="{ 'font-bold': balanceFrozen }">
-                    {{ formatCurrency(customer.balance) }}
+                <td pFrozenColumn class="font-bold">{{ customer.idtoppings }}</td>
+                <td style="min-width:100px">{{ customer.nombre }}</td>
+                <td><p-button icon="pi pi-trash" severity="danger" (onClick)="deleteTopping(customer)" />
                 </td>
             </tr>
         </ng-template>

@@ -160,12 +160,12 @@
                 <div class="card">
                     <div class="card-header">Fecha: {{ fecha_actual }}</div>
                     <div class="card-details" *ngFor="let data of Resumenventahoy">
-                        <p><strong>Yape:</strong> S/ {{data.YAPE}} </p>
-                        <p><strong>Plin:</strong> S/ {{data.PLIN}} </p>
-                        <p><strong>Visa:</strong> S/{{data.VISA}} </p>
-                        <p><strong>Efectivo:</strong> S/{{data.EFECTIVO}} </p>
+                        <p><strong>Yape:</strong> S/ {{data.yape}} </p>
+                        <p><strong>Plin:</strong> S/ {{data.plin}} </p>
+                        <p><strong>Visa:</strong> S/{{data.visa}} </p>
+                        <p><strong>Efectivo:</strong> S/{{data.efectivo}} </p>
                         <hr>
-                        <h4>Total: S/ {{ (data.YAPE || 0) + (data.PLIN || 0) + (data.VISA || 0) + (data.EFECTIVO || 0) |
+                        <h4>Total: S/ {{ (data.yape || 0) + (data.plin || 0) + (data.visa || 0) + (data.efectivo || 0) |
                             number:'1.2-2' }}</h4>
                         <p><strong>Gastos:</strong> S/{{ totalGastos() | number:'1.2-2' }} </p>
                         <p><strong>Caja inicial:</strong> S/ {{ cajaForm.get('monto')?.value }} </p>

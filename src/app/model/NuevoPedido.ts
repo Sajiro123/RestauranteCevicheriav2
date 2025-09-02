@@ -18,4 +18,6 @@ export interface NuevoPedido {
     yape: number;
     plin: number;
     efectivo: number;
+    cliente?: string | null;
+    delivery?: number | null;
 }

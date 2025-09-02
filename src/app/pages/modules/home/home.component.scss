@@ -56,6 +56,7 @@ tbody tr {
     gap: 20px;
 }
 
+
 .mesa {
     position: relative;
     width: 130px;
@@ -85,7 +86,10 @@ tbody tr {
 
 .seleccionada {
     border-color: #000000;
+}
 
+.seleccionada_delivery {
+    background: #dadada !important;
 }
 
 // .mesas {
@@ -203,6 +207,10 @@ textarea {
 
 }
 
+.p-tablist-tab-list {
+    font-size: 20px
+}
+
 .calculator {
     background: #ffffff;
     border-radius: 20px;
@@ -313,4 +321,97 @@ textarea {
             transform: rotate(360deg);
         }
     }
+}
+
+// CARD DELIVERY
+
+.pedido-card {
+    width: 100%;
+    max-width: 220px;
+    max-height: 420px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.header {
+    margin-top: 10px;
+    background-color: #4a6bdf;
+    color: white;
+    padding: 10px;
+    text-align: center;
+}
+
+.numero-pedido {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+}
+
+// .estado {
+//     display: inline-block;
+//     background-color: #ff9500;
+//     color: white;
+//     padding: 5px 15px;
+//     border-radius: 20px;
+//     font-size: 14px;
+//     font-weight: 500;
+//     margin-top: 10px;
+// }
+
+.cliente {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+.cliente h2 {
+    font-size: 22px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.hora {
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.acciones {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+.btn {
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    flex: 1;
+    margin: 0 5px;
+}
+
+.btn-detalles {
+    background-color: #4a6bdf;
+    color: white;
+    border: none;
+}
+
+.btn-editar {
+    background-color: white;
+    color: #4a6bdf;
+    border: 2px solid #4a6bdf;
+}
+
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0);
 }

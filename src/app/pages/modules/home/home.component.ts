@@ -15,9 +15,11 @@ import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { jsPDF } from 'jspdf';
 import { Popover } from 'primeng/popover';
+import { UniquePipe } from '../../../model/util/unique.pipe';
+import { OrderByPipe } from "../../../model/util/order-by.pipe";
 @Component({
     selector: 'app-home',
-    imports: [CommonModule, ImportsModule, FormsModule], // <-- Add this
+    imports: [CommonModule, ImportsModule, FormsModule, UniquePipe, OrderByPipe], // <-- Add this
     providers: [MessageService, ConfirmationService],
     templateUrl: './home.component.html',
     styleUrl: './home.component.scss'
@@ -494,11 +496,38 @@ export class HomeComponent {
     RegistrarPedido() {
         this.isLoading = true; // Activar el loader
         if (this.mesaSeleccionada) {
+            if (this.mesaSeleccionada.numero == '0') {
+                if (!this.NuevoPedido.cliente || this.NuevoPedido.cliente?.trim() === '') {
+                    document.getElementById('cliente')?.focus();
+                    this.messageService.add({
+                        severity: 'info',
+                        summary: 'Ingresar Cliente',
+                        detail: 'Debes ingresar el Cliente para registrar el pedido',
+                        life: 3000
+                    });
+                    this.isLoading = false;
+                    return;
+                }
+            }
+
+            if (this.NuevoPedido.pedidodetalle.length == 0) {
+                this.messageService.add({
+                    severity: 'info',
+                    summary: 'Ingresar Producto',
+                    detail: 'Seleccione un producto para registrar el pedido',
+                    life: 3000
+                });
+                this.isLoading = false;
+                return;
+            }
+
             this.PedidoService.insertPedido(this.NuevoPedido, this.mesaSeleccionada.numero, this.comentarios)
                 .pipe(
                     switchMap((pedidoResponse: any) => {
                         const pedidoId = pedidoResponse.data[0].id;
-
+                        if (this.mesaSeleccionada?.numero == '0') {
+                            this.mesaSeleccionada.idpedido = pedidoId; // Asignar el ID del pedido insertado
+                        }
                         // Creamos un array de observables para los detalles
                         const detallesObservables = this.NuevoPedido.pedidodetalle.map((element) => {
                             element.idpedido = pedidoId;
@@ -511,6 +540,7 @@ export class HomeComponent {
                 )
                 .subscribe({
                     next: async () => {
+                        debugger;
                         await this.cargarMesas();
 
                         setTimeout(() => {
@@ -543,10 +573,13 @@ export class HomeComponent {
     }
 
     editar(mesa: Mesa, pedido: NuevoPedido): void {
-        // this.LimpiarNuevoPedido();
         this.buscarPlato = '';
         this.pedido_mesa_status = false;
-        var status_array = this.Pedidos.filter((p) => p.mesa === mesa.numero);
+        if (mesa.numero == '0') {
+            var status_array = this.Pedidos.filter((p) => p.idpedido === pedido.idpedido);
+        } else {
+            var status_array = this.Pedidos.filter((p) => p.mesa === mesa.numero);
+        }
         this.NuevoPedido = this.getPedidoClick(status_array);
     }
     getPedidoClick(status_array: any): NuevoPedido {
@@ -700,15 +733,31 @@ export class HomeComponent {
         this.comentarios = '';
         this.pedido_mesa_status = false;
         this.mesaSeleccionada = mesa;
-        if (this.Pedidos) {
-            var status_array = this.Pedidos.filter((p) => p.mesa === mesa.numero);
-            if (status_array.length > 0) {
-                this.pedido_mesa_status = true;
-                this.tipomodal = 'Editar';
-            } else {
-                this.tipomodal = 'Registrar';
+        if (mesa.numero == '0') {
+            // Delivery
+            this.NuevoPedido.delivery = 1;
+            if (mesa.idpedido && mesa.idpedido > 0) {
+                var status_array = this.Pedidos.filter((p) => p.idpedido == mesa.idpedido);
+                if (status_array.length > 0) {
+                    this.pedido_mesa_status = true;
+                    this.tipomodal = 'Editar';
+                } else {
+                    this.tipomodal = 'Registrar';
+                }
+            }
+        } else {
+            this.NuevoPedido.delivery = 0;
+            if (this.Pedidos) {
+                var status_array = this.Pedidos.filter((p) => p.mesa == mesa.numero);
+                if (status_array.length > 0) {
+                    this.pedido_mesa_status = true;
+                    this.tipomodal = 'Editar';
+                } else {
+                    this.tipomodal = 'Registrar';
+                }
             }
         }
+
         this.BuscarPlatoSearchText('');
 
         setTimeout(() => {
@@ -735,6 +784,7 @@ export class HomeComponent {
     }
 
     generatePDF(pedido: NuevoPedido) {
+        this.isLoading = true;
         this.loadImageBase64('assets/img/logo.png').then((base64Logo) => {
             this.PedidoService.ShowProductosPdf(pedido.idpedido).subscribe((response) => {
                 var inicial = 115;
@@ -798,7 +848,12 @@ export class HomeComponent {
                 // Datos
                 doc.text('Fecha: ' + datePart + ' ' + timePart, 6, y);
                 y += 5;
-                doc.text('Mesa: ' + response.data[0].mesa, 6, y);
+                if (response.data[0].mesa == '0') {
+                    doc.text('Cliente: ' + (response.data[0].cliente || ''), 6, y);
+                } else {
+                    doc.text('Mesa: ' + response.data[0].mesa, 6, y);
+                }
+
                 y += 4;
                 doc.setFontSize(9);
 
@@ -845,6 +900,7 @@ export class HomeComponent {
                 const pdfBlob = doc.output('blob');
                 const pdfUrl = URL.createObjectURL(pdfBlob);
                 this.PDFdescargar(pdfUrl);
+                this.isLoading = false;
             });
         });
     }
@@ -862,7 +918,8 @@ export class HomeComponent {
     }
 
     generateCocinaPDF(pedido: any) {
-        debugger
+        this.isLoading = true; // Activar el loader
+
         this.PedidoService.ShowProductosPdf(pedido.idpedido).subscribe((response) => {
             this.estadopedido = 0;
             var inicial = 100;
@@ -921,13 +978,19 @@ export class HomeComponent {
             y += 5;
 
             doc.setFontSize(14);
-
+            var date = new Date(response.data[0].created_at);
+            var datePart = date.toLocaleDateString('en-US');
+            var timePart = date.toLocaleTimeString('en-US');
             // Datos
-            doc.text('Fecha: 09/05/2025 18:06:56', 42, y, { align: 'center' });
-            y += 5;
-
-            doc.text('Mesa: ' + response.data[0].mesa, 42, y, { align: 'center' });
+            doc.text('Fecha: ' + datePart + ' ' + timePart, 42, y, { align: 'center' }); // Datos
             y += 7;
+            if (response.data[0].mesa == '0') {
+                doc.text('Cliente : ' + response.data[0].cliente, centerX, y, { align: 'center' });
+                y += 9;
+            } else {
+                doc.text('Mesa: ' + response.data[0].mesa, 42, y, { align: 'center' });
+                y += 7;
+            }
 
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(12);
@@ -942,8 +1005,12 @@ export class HomeComponent {
             });
             if (data.length > 0) {
                 doc.setFont('helvetica', 'bold');
+                if (response.data[0].mesa == 0) {
+                    doc.text('PEDIDOS PARA LLEVAR DELIVERY', centerX, y, { align: 'center' });
+                } else {
+                    doc.text('PEDIDOS PARA MESA', centerX, y, { align: 'center' });
+                }
 
-                doc.text('PEDIDOS PARA MESA', centerX, y, { align: 'center' });
                 y += 5;
                 doc.text('=============================', centerX, y, { align: 'center' });
                 y += 5;
@@ -1039,6 +1106,7 @@ export class HomeComponent {
             const pdfBlob = doc.output('blob');
             const pdfUrl = URL.createObjectURL(pdfBlob);
             this.PDFdescargar(pdfUrl);
+            this.isLoading = false; // Desactivar el loader
         });
     }
     PDFdescargar(pdf: string) {
@@ -1051,15 +1119,31 @@ export class HomeComponent {
         this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(pdf);
     }
 
-    getPedidosDeMesa(numMesa: any, statuspedido: boolean): Pedido[] {
+    getPedidosDeMesa(numMesa: any, statuspedido: boolean, mesaSeleccionada: any): Pedido[] {
+        var idpedido = 0;
+        if (mesaSeleccionada != null) {
+            if (mesaSeleccionada.idpedido && mesaSeleccionada.idpedido > 0) {
+                idpedido = mesaSeleccionada.idpedido;
+            }
+        }
         if (this.Pedidos) {
             if (statuspedido == true) {
-                var status_array = this.Pedidos.filter((p) => p.mesa == numMesa).sort((a, b) => {
-                    if (a.categoria !== b.categoria) {
-                        return Number(b.categoria) - Number(a.categoria); // ↓
-                    }
-                    return Number(a.categoria) - Number(b.categoria); // ↑
-                });
+                if (numMesa == '0') {
+                    var status_array = this.Pedidos.filter((p) => p.idpedido == mesaSeleccionada.idpedido).sort((a, b) => {
+                        if (a.categoria !== b.categoria) {
+                            return Number(b.categoria) - Number(a.categoria); // ↓
+                        }
+                        return Number(a.categoria) - Number(b.categoria); // ↑
+                    });
+                } else {
+                    var status_array = this.Pedidos.filter((p) => p.mesa == numMesa).sort((a, b) => {
+                        if (a.categoria !== b.categoria) {
+                            return Number(b.categoria) - Number(a.categoria); // ↓
+                        }
+                        return Number(a.categoria) - Number(b.categoria); // ↑
+                    });
+                }
+
                 var idtopingsArray: { idtopings: number; nombre: string }[] = [];
                 if (status_array.length != 0) {
                     this.NuevoPedido = {
@@ -1118,9 +1202,13 @@ export class HomeComponent {
                     // Si idtopings es igual a "1", buscar el topping correspondiente en multiselectToppings
                     // Buscar el topping en multiselectToppings
 
+                    if (idpedido > 0) {
+                        this.comentarios = status_array[0].comentario;
+                        return this.Pedidos.filter((p) => p.idpedido == mesaSeleccionada.idpedido);
+                    }
                     if (status_array.length > 0) {
                         this.comentarios = status_array[0].comentario;
-                        return this.Pedidos.filter((p) => p.mesa === numMesa);
+                        return this.Pedidos.filter((p) => p.mesa == numMesa);
                     }
                 } else {
                     // alert(1);
@@ -1140,9 +1228,12 @@ export class HomeComponent {
         }
     }
 
-    calculateTotalPedidos(numeroMesa: string, pedidoMesaStatus: boolean): number {
-        const pedidos = this.getPedidosDeMesa(numeroMesa, pedidoMesaStatus);
-        return pedidos.reduce((total, pedido) => total + pedido.cantidad * pedido.precioU, 0);
+    calculateTotalPedidos(numeroMesa: string, pedidoMesaStatus: boolean, mesaSeleccionada: any): any {
+        const pedidos = this.getPedidosDeMesa(numeroMesa, pedidoMesaStatus, mesaSeleccionada);
+        // return
+        return pedidos.reduce((total, pedido) => {
+            return total + pedido.cantidad * pedido.precioU;
+        }, 0);
     }
     LimpiarNuevoPedido(): void {
         this.estadomesa.forEach((element: any) => {
@@ -1221,11 +1312,12 @@ export class HomeComponent {
         y += 5;
 
         doc.setFontSize(14);
-
+        var date = new Date(this.pedidosSeleccionados[0].created_at);
+        var datePart = date.toLocaleDateString('en-US');
+        var timePart = date.toLocaleTimeString('en-US');
         // Datos
-        doc.text('Fecha: 09/05/2025 18:06:56', 42, y, { align: 'center' });
+        doc.text('Fecha: ' + datePart + ' ' + timePart, 42, y, { align: 'center' });
         y += 5;
-        debugger;
 
         doc.text('Mesa:' + this.pedidosSeleccionados[0].mesa, 42, y, { align: 'center' });
         y += 7;

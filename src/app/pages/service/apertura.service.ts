@@ -8,7 +8,23 @@ export class AperturaService {
     constructor(private http: HttpClient) {}
 
     ListarAperturaHoy() {
-        const query = `SELECT * FROM apertura WHERE fecha=CURDATE() AND deleted IS null;`;
+        // Obtener fecha y hora actual de Perú
+        const now = new Date();
+        const fechaPeru = now.toLocaleDateString('en-CA', {
+            timeZone: 'America/Lima'
+        });
+
+        const horaPeru = now.toLocaleString('es-PE', {
+            timeZone: 'America/Lima',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+
+        const fechaHoraPeru = `${fechaPeru} ${horaPeru}`;
+
+        const query = `SELECT * FROM apertura_caja WHERE fecha='${fechaPeru}' AND deleted IS null;`;
         return this.http.post<any>(this.apiUrl, { query });
     }
     ListCategoriasGastos() {
@@ -22,7 +38,23 @@ export class AperturaService {
     }
 
     registrarCaja(value: any) {
-        var query = `INSERT INTO apertura
+        // Obtener fecha y hora actual de Perú
+        const now = new Date();
+        const fechaPeru = now.toLocaleDateString('en-CA', {
+            timeZone: 'America/Lima'
+        });
+
+        const horaPeru = now.toLocaleString('es-PE', {
+            timeZone: 'America/Lima',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+
+        const fechaHoraPeru = `${fechaPeru} ${horaPeru}`;
+
+        var query = `INSERT INTO apertura_caja
         (fecha
         ,total
         ,estado
@@ -31,17 +63,32 @@ export class AperturaService {
         ,responsable
         )
         VALUES (
-        CURDATE()
-        ,'${value.monto}',
+        '${fechaPeru}',
+        '${value.monto}',
         1,
-        CURRENT_TIMESTAMP(),
-        1
-        ,'${value.responsable}')`;
+        '${fechaHoraPeru}',
+        1,
+        '${value.responsable}')`;
 
         return this.http.post<any>(this.apiUrl, { query });
     }
 
     registrarGastos(value: any) {
+        const now = new Date();
+        const fechaPeru = now.toLocaleDateString('en-CA', {
+            timeZone: 'America/Lima'
+        });
+
+        const horaPeru = now.toLocaleString('es-PE', {
+            timeZone: 'America/Lima',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+
+        const fechaHoraPeru = `${fechaPeru} ${horaPeru}`;
+
         var date = new Date();
         var created_at = date.toISOString().split('T')[0]; // "2025-02-20" (UTC)
         var query = `INSERT INTO gastos
@@ -55,21 +102,37 @@ export class AperturaService {
         VALUES ('${value.descripcion}',
         '${value.categoria}',
         '${value.monto}',
-        CURDATE(),
+        '${fechaPeru}',
         '${value.notas}',
-        CURRENT_TIMESTAMP(),
+        '${fechaHoraPeru}',
         1)`;
 
         return this.http.post<any>(this.apiUrl, { query });
     }
 
     cerrarCaja(value: any) {
+        // Obtener fecha y hora actual de Perú
+        const now = new Date();
+        const fechaPeru = now.toLocaleDateString('en-CA', {
+            timeZone: 'America/Lima'
+        });
+
+        const horaPeru = now.toLocaleString('es-PE', {
+            timeZone: 'America/Lima',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+
+        const fechaHoraPeru = `${fechaPeru} ${horaPeru}`;
+
         var date = new Date();
         var fecha = date.toISOString().split('T')[0]; // "2025-02-20" (UTC)
-        var query = `UPDATE apertura a
-        SET a.estado=2
-        WHERE a.fecha=CURDATE()
-         AND a.deleted IS NULL;`;
+        var query = `UPDATE apertura_caja
+        SET estado='2'
+        WHERE fecha='${fechaPeru}'
+         AND deleted IS NULL;`;
         return this.http.post<any>(this.apiUrl, { query });
     }
 }
