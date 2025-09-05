@@ -1,20 +1,18 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, from } from 'rxjs';
 import { Mesa } from '../../model/Mesa';
-import { HttpClient } from '@angular/common/http';
+import { SupabaseService } from '../../services/supabase.service';
 import { Router } from '@angular/router';
 
 @Injectable({ providedIn: 'root' })
 export class HomeService {
-    private apiUrl = 'http://localhost:3000/post';
 
     constructor(
-        private http: HttpClient,
+        private supabaseService: SupabaseService,
         private router: Router
     ) {}
 
     getMesas(): Observable<any> {
-        const query = 'select * from mesa c where c.deleted is  null;';
-        return this.http.post<any>(this.apiUrl, { query });
+        return from(this.supabaseService.getMesas());
     }
 }

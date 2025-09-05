@@ -1,14 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { SupabaseService } from '../../services/supabase.service';
+import { Observable, from } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ConfiguracionService {
-    private apiUrl = 'http://localhost:3000/post';
+    constructor(private supabaseService: SupabaseService) {}
 
-    constructor(private http: HttpClient) {}
-
-    ListarToppingPedido() {
-        const query = `SELECT * FROM toppings;`;
-        return this.http.post<any>(this.apiUrl, { query });
+    ListarToppingPedido(): Observable<any> {
+        return from(this.supabaseService.getToppings());
     }
 }
